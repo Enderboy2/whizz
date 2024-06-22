@@ -21,7 +21,7 @@
 				redirectTo={`${data.url}/auth/callback`}
 				showLinks={true} 
 				appearance={{ theme: ThemeSupa, style: { input: 'color: #fff' } }}
-				providers={['github']} 
+				providers={['github','google']} 
 			/>
 		</div>
 	</div>
