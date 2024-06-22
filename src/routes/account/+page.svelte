@@ -3,8 +3,10 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
-	export let data
+  	import { onMount } from 'svelte';
+  	import { debounce } from 'lodash';
 
+	export let data
 	let { session, supabase, profile } = data
 	$: ({ session, supabase, profile } = data)
 
@@ -28,13 +30,47 @@
 			update()
 		}
 	}
+
+
+	let query = '';
+	let results: Array<any> = [];
+		const search = debounce(async (query: string) => {
+    if (query) {
+      const { data, error } = await supabase
+        .from('your-table')
+        .select('*')
+        .or(`column1.ilike.%${query}%,column2.ilike.%${query}%`);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      results = data;
+    } else {
+      results = [];
+    }
+  }, 300); // 300ms debounce
+
+  // Watch for changes in the query
+  $: search(query);
+
 </script>
 
 {#if selected_syllabus === "NULL"}
 
-<div>
-	<h1 class="font-space">Hi {username}, Welcome to Whizz!</h1>
-	<h2>I see you hevent selected your subjects yet, care to do so?</h2>
+<div class="font-space">
+	<h1 >Hi {username}, Welcome to Whizz!</h1>
+	<h2 >I see you hevent selected your subjects yet, care to do so?</h2>
+	<input type="text" bind:value={query} placeholder="Search..." />
+	<ul>
+		{#each results as result}
+			<li>
+				<p>{result.column1}</p>
+				<p>{result.column2}</p>
+			</li>
+		{/each}
+	</ul>
 	
 </div>
 {:else}
