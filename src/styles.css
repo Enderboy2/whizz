@@ -4,7 +4,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
 html,
 body {
-	--custom-font-family: "Space Grotesk", sans-serif;
 	--custom-bg-color: #101010;
 	--custom-panel-color: #222;
 	--custom-box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.8);
@@ -17,7 +16,9 @@ body {
 
 	padding: 0;
 	margin: 0;
-	font-family: var(--custom-font-family);
+	font-family: "Space Grotesk", sans-serif;
+  	font-optical-sizing: auto;
+  	font-style: normal;
 	background-color: var(--custom-bg-color);
 }
 
