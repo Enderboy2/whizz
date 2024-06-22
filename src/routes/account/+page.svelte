@@ -30,12 +30,23 @@
 	}
 </script>
 
+{#if selected_syllabus === null}
+
 <div class="form-widget">
 	<h1>Hi {username}, Welcome to Whizz!</h1>
-	<h2>you have selected -- {selected_syllabus}</h2>
-	<form method="post" action="?/signout" use:enhance={handleSignOut}>
-		<div>
-			<button class="button block" disabled={loading}>Sign Out</button>
-		</div>
-	</form>
+	<h2>I see you hevent selecte your subjects yet, care to do so?</h2>
+	
 </div>
+{:else}
+
+<div>
+	<h1 class="font-bold underline text-3xl">you have selected -- {selected_syllabus}</h1>
+</div>
+
+{/if}
+
+<form method="post" action="?/signout" use:enhance={handleSignOut}>
+	<div>
+		<button class="button block" disabled={loading}>Sign Out</button>
+	</div>
+</form>
