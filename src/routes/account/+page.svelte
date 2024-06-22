@@ -37,9 +37,9 @@
 		const search = debounce(async (query: string) => {
     if (query) {
       const { data, error } = await supabase
-        .from('your-table')
+        .from('syllabus')
         .select('*')
-        .or(`column1.ilike.%${query}%,column2.ilike.%${query}%`);
+        .or(`syllabus_name.ilike.%${query}%,syllabus_code.ilike.%${query}%`);
 
       if (error) {
         console.error(error);
@@ -66,8 +66,9 @@
 	<ul>
 		{#each results as result}
 			<li>
-				<p>{result.column1}</p>
-				<p>{result.column2}</p>
+				<p>{result.syllabus_name}</p>
+				<p>{result.syllabus_code}</p>
+				<p>{result.syllabus_level}</p>
 			</li>
 		{/each}
 	</ul>
