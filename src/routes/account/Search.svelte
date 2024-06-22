@@ -50,8 +50,7 @@
     <ul>
       {#each results as result}
         <li>
-          <p>{result.text_column}</p> <!-- Adjust to display actual data -->
-          <p>{result.number_column}</p> <!-- Adjust to display actual data -->
+          <p>{result.syllabus_name}, {result.syllabus_level}, {result.syllabus_code}</p> <!-- Adjust to display actual data -->
         </li>
       {/each}
     </ul>
