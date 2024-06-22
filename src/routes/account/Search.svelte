@@ -1,5 +1,7 @@
 <script lang="ts">
-    import { supabase } from '$lib/supabase';
+    import type { SupabaseClient } from '@supabase/supabase-js';
+    
+    export let supabase: SupabaseClient;
     import { onMount } from 'svelte';
   
     let query = '';

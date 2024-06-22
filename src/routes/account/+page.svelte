@@ -34,7 +34,7 @@
 <div class="font-space">
 	<h1 >Hi {username}, Welcome to Whizz!</h1>
 	<h2 >I see you hevent selected your subjects yet, care to do so?</h2>
-	<Search />	
+	<Search {supabase}/>	
 </div>
 {:else}
 
