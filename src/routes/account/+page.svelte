@@ -4,7 +4,6 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 
   	import { onMount } from 'svelte';
-  	import { debounce } from 'lodash';
 
 	export let data
 	let { session, supabase, profile } = data
@@ -34,7 +33,7 @@
 
 	let query = '';
 	let results: Array<any> = [];
-		const search = debounce(async (query: string) => {
+		const search = async (query: string) => {
     if (query) {
       const { data, error } = await supabase
         .from('syllabus')
@@ -50,7 +49,7 @@
     } else {
       results = [];
     }
-  }, 300); // 300ms debounce
+  }; // 300ms debounce
 
   // Watch for changes in the query
   $: search(query);
