@@ -30,11 +30,11 @@
 	}
 </script>
 
-{#if selected_syllabus === null}
+{#if selected_syllabus === "NULL"}
 
-<div class="form-widget">
+<div>
 	<h1>Hi {username}, Welcome to Whizz!</h1>
-	<h2>I see you hevent selecte your subjects yet, care to do so?</h2>
+	<h2>I see you hevent selected your subjects yet, care to do so?</h2>
 	
 </div>
 {:else}
