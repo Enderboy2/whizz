@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select(`username, full_name, website, avatar_url, selected_syllabus`)
+    .select(`username, selected_syllabus`)
     .eq('id', session.user.id)
     .single()
 

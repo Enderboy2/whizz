@@ -8,12 +8,19 @@
 	let { session, supabase, profile } = data
 	$: ({ session, supabase, profile } = data)
 
-	let profileForm: HTMLFormElement
 	let loading = false
-	let fullName: string = profile?.full_name ?? ''
-	let username: string = profile?.username ?? ''
-	let selected_syllabus: string = profile?.selected_syllabus ?? ''
+	let username:string
+	let selected_syllabus:string
 
+	if(profile){
+		username= profile.username ?? 'empty😢'
+		selected_syllabus= profile.selected_syllabus ?? 'empty😢'
+	}else{
+		username= "null clown"
+		selected_syllabus = "null stupid or empty i guess"
+	}
+	
+	
 	const handleSignOut: SubmitFunction = () => {
 		loading = true
 		return async ({ update }) => {
