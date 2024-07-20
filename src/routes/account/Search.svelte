@@ -54,7 +54,7 @@
   const closePopup = () => {
     selectedSyllabus.set(null);
   };
-
+  
   </script>
   
   <style>
