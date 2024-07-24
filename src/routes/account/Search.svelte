@@ -84,7 +84,7 @@
   
   
   <div>
-    <input type="text" bind:value={query} placeholder="Search..." />
+    <input class=" text-primary p-1" type="text" bind:value={query} placeholder="Search..." />
     <ul>
       {#each results as result}
         <div class="syllabus-item">
