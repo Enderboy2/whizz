@@ -89,7 +89,7 @@
       <hr>
       {#if outcomesArray?.length > 0}  <!-- Use optional chaining for length -->
         {#each outcomesArray as outcome}
-          <div class="flex flex-row space-x-3 my-2 ">
+          <div class="flex flex-row space-x-3 my-2 ml-2">
                 {#if searchOutcomes(outcomes, outcome.id)}
                 <button class="border h-6 text-green-500" on:click={() => {toggleOutcome(outcomes, outcome.id)}}>5las</button>
                 {:else}
