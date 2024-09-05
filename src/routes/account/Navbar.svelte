@@ -54,9 +54,13 @@
 </script>
 
 <div
-  class="top-0 left-0 h-screen w-20 m-0 flex flex-col bg-gray-900 text-white shadow-lg px-1 py-2"
+  class="top-0 left-0 h-screen w-20 m-0 fixed flex flex-col bg-gray-900 text-white shadow-lg px-1 py-2"
 >
-  <button class="sidebar-icon" on:click={toggleSearch}> 🔎 </button>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="group sidebar-icon" on:click={toggleSearch}> 🔎 
+  <span class="sidebar-tooltip group-hover:scale-100 z-10 h-12 pt-4">search</span>
+</div>
 
   {#if syllabusData.length > 0}
     {#each syllabusData as syllabus}
@@ -67,7 +71,7 @@
         on:click={() => switchActiveSyllabus(syllabus.syllabus_id)}
       >
         {syllabus.syllabus_name[0]}
-        <span class="sidebar-tooltip group-hover:scale-100">
+        <span class="sidebar-tooltip group-hover:scale-100 z-10">
           {syllabus.syllabus_name} - {syllabus.syllabus_level}
         </span>
       </div>
@@ -78,7 +82,7 @@
     method="post"
     action="?/signout"
     use:enhance={handleSignOut}
-    class=" h-fit bottom-1 absolute group"
+    class=" h-fit bottom-1 absolute"
   >
     <button class="sidebar-icon bg-red-500 hover:bg-red-600 overflow-hidden"
       >🚪

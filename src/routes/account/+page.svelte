@@ -14,7 +14,8 @@
     profile: {
       id: number;
       username: string;
-      selected_syllabus: string; // Assuming selected_syllabus is stored as comma-separated IDs
+      selected_syllabus: string;
+      outcomes: string; // Assuming selected_syllabus is stored as comma-separated IDs
     };
   };
 
@@ -22,8 +23,8 @@
   let loading = false;
   let username = profile?.username ?? "";
   let selected_syllabus = profile?.selected_syllabus ?? "";
+  let outcomes = profile?.outcomes ?? "";
   let showSearch = false;
-
   const dispatch = createEventDispatcher();
 
   const handleSignOut: SubmitFunction = () => {
@@ -38,6 +39,22 @@
     if (!selected_syllabus || selected_syllabus === "NULL") return false;
     const selectedIds = selected_syllabus.split(",");
     return selectedIds.includes(syllabusId.toString());
+  };
+
+  const addOutcomesToProfile = async (outcomes_string: any) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ outcomes: outcomes_string })
+        .eq("id", session.user.id);
+      if (error) {
+        console.error("Error updating profile:", error.message);
+        return;
+      }
+      profile.outcomes = outcomes_string;
+    } catch (error) {
+      console.error("Error adding to profile:", error);
+    }
   };
 
   const addToProfile = async (syllabusId: number) => {
@@ -83,7 +100,8 @@
     .split(",")
     .map((id: string) => parseInt(id, 10));
   $: active_syllabus = syllabus_ids[0];
-
+  $: outcomes = profile.outcomes;
+  $: console.log("done outcmes -> ", outcomes)
   const switchActiveSyllabus = (id: number) => {
     active_syllabus = id;
   };
@@ -102,6 +120,11 @@
         console.error("Supabase search error:", error.message);
         return [];
       }
+
+      (data as any).syllabusChapters = await supabase
+        .from("chapters")
+        .select("*")
+        .in("syllabus_id", id);
 
       return data;
     } catch (error: any) {
@@ -147,8 +170,8 @@
     </h2>
   </div>
 {:else if syllabusData}
-  {#key syllabusData}
-    <Content {supabase} {syllabusData} />
+  {#key syllabusData && outcomes}
+    <Content {syllabusData} {supabase}  {addOutcomesToProfile} {session} {outcomes}/>
   {/key}
 {/if}
 

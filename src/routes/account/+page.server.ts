@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select(`username, selected_syllabus`)
+    .select(`username, selected_syllabus, outcomes`)
     .eq("id", session.user.id)
     .single();
 
