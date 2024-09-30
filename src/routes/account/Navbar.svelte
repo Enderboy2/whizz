@@ -4,13 +4,10 @@
   import type { SupabaseClient } from "@supabase/supabase-js";
 
   export let supabase: SupabaseClient;
-  export let selected_syllabus: any;
+  export let syllabus_ids: number[];
   export let switchActiveSyllabus: any;
   export let handleSignOut: any;
   export let toggleSearch: any;
-
-  let syllabus_ids: any = selected_syllabus.split(",");
-  syllabus_ids = syllabus_ids.map((id: string) => parseInt(id, 10));
 
   // Reactive variable to hold the results
   let syllabusData: any[] = [];
@@ -46,7 +43,7 @@
   };
 
   // Call fetchData to populate syllabusData
-  $: if (!selected_syllabus || selected_syllabus === "NULL") {
+  $: if (syllabus_ids.length === 0) {
     console.log("Empty sidebar");
   } else {
     fetchData();

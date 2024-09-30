@@ -7,14 +7,23 @@
   export let addOutcomesToProfile: any;
   export let outcomes: string
 
-  let syllabusChapters = (syllabusData as any).syllabusChapters.data;
-  let name = syllabusData[0].syllabus_name;
-  let level = syllabusData[0].syllabus_level;
-  let code = syllabusData[0].syllabus_code;
-  let board = syllabusData[0].syllabus_board;
-  let isOpen: boolean = true;
-  let activeChapter = syllabusChapters[0];
 
+  let loading = true
+  let syllabusChapters = []
+  let name = "";
+    let level = "";
+    let code
+    let board ="";
+    let activeChapter: any;
+  if(syllabusData.syllabusChapters){
+    loading = false
+    syllabusChapters = (syllabusData as any)?.syllabusChapters.data ?? [];
+    let name = syllabusData[0].syllabus_name;
+    let level = syllabusData[0].syllabus_level;
+    let code = syllabusData[0].syllabus_code;
+    let board = syllabusData[0].syllabus_board;
+    let activeChapter = syllabusChapters[0];
+  }
 
   const build = async (id: any) => {
     try {

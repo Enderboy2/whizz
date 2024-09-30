@@ -1,38 +1,13 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import { Auth } from '@supabase/auth-ui-svelte';
-	import { ThemeSupa } from '@supabase/auth-ui-shared';
-
-	export let data;
 </script>
 
-<svelte:head>
-	<title>Welcome to My App</title>
-</svelte:head>
-
-<div class="container">
-	<h1>Welcome to My App</h1>
-	<p>Login or Sign Up to get started.</p>
-	<div class="row flex-center flex">
-		<div class="col-6 form-widget">
-			<Auth
-				supabaseClient={data.supabase}
-				view="sign_in" 
-				redirectTo={`${data.url}/auth/callback`}
-				showLinks={true} 
-				appearance={{ theme: ThemeSupa, style: { input: 'color: #fff' } }}
-				providers={['github','google']} 
-			/>
-		</div>
-	</div>
+<div class="hero min-h-screen bg-secondary">
+  <div class="hero-content">
+    <div class="max-w-md text-center">
+      <h1 class="font-bold text-4xl">Pokecse</h1>
+      <p class="py-6">Create an account to start the game? ig</p>
+      <a href="/login" class="btn btn-primary">Get Started</a>
+    </div>
+  </div>
 </div>
-
-<style>
-	.container {
-		padding: 50px;
-		text-align: center;
-	}
-	.form-widget {
-		margin: auto;
-	}
-</style>

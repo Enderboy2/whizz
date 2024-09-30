@@ -1,18 +1,12 @@
-// src/app.d.ts
-
-import { SupabaseClient, Session } from "@supabase/supabase-js";
+import type { Session,SupabaseClient } from "@supabase/supabase-js";
 
 declare global {
-  namespace App {
-    interface Locals {
-      supabase: SupabaseClient;
-      safeGetSession(): Promise<{ session: Session | null; user: User | null }>;
+    namespace app{
+        interface pageData {
+            supabase: SupabaseClient
+            session: Session | null
+        }
     }
-    interface PageData {
-      session: Session | null;
-      user: User | null;
-    }
-    // interface Error {}
-    // interface Platform {}
-  }
 }
+
+export {};

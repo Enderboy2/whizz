@@ -1,12 +1,6 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
   import type { SubmitFunction } from "@sveltejs/kit";
-  import Search from "./Search.svelte";
   import type { SupabaseClient } from "@supabase/supabase-js";
-  import { createEventDispatcher } from "svelte";
-  import { onMount } from "svelte";
-  import Navbar from "./Navbar.svelte";
-  import Content from "./Content.svelte";
 
   export let data: {
     session: any;
@@ -14,18 +8,37 @@
     profile: {
       id: number;
       username: string;
-      selected_syllabus: string;
-      outcomes: string; // Assuming selected_syllabus is stored as comma-separated IDs
+      selected: string;
+      outcomes: string; 
     };
   };
 
   let { session, supabase, profile } = data;
-  let loading = false;
-  let username = profile?.username ?? "";
-  let selected_syllabus = profile?.selected_syllabus ?? "";
-  let outcomes = profile?.outcomes ?? "";
+  let loading = true;
+
+  let username = "user";
+  let syllabus_ids: number[] = [];
+  let active_syllabus: string | number;
+  let outcomes ="";
+
+  $: if (profile && profile.username) {
+    console.log("Profile is available", profile);
+    syllabus_ids = profile.selected?.split(",").map((id: string) => parseInt(id, 10)) ?? [];
+    active_syllabus = syllabus_ids[0];
+    outcomes = profile.outcomes ?? "";
+    
+    if (syllabus_ids.length > 0) {
+      fetchData(active_syllabus).then(() => {
+        loading = false;
+      });
+    } else {
+      loading = false;
+    }
+  } else {
+    console.log("still loading");
+  }
+
   let showSearch = false;
-  const dispatch = createEventDispatcher();
 
   const handleSignOut: SubmitFunction = () => {
     loading = true;
@@ -36,9 +49,7 @@
   };
 
   const syllabusIsSelected = (syllabusId: number) => {
-    if (!selected_syllabus || selected_syllabus === "NULL") return false;
-    const selectedIds = selected_syllabus.split(",");
-    return selectedIds.includes(syllabusId.toString());
+    return syllabus_ids.includes(syllabusId);
   };
 
   const addOutcomesToProfile = async (outcomes_string: any) => {
@@ -59,25 +70,16 @@
 
   const addToProfile = async (syllabusId: number) => {
     try {
-      let updatedSyllabusIds = "";
-
-      if (!selected_syllabus || selected_syllabus === "NULL") {
-        updatedSyllabusIds = syllabusId.toString();
+      if (!syllabus_ids.includes(syllabusId)) {
+        syllabus_ids.push(syllabusId);
       } else {
-        const selectedIds = selected_syllabus.split(",");
-        if (!selectedIds.includes(syllabusId.toString())) {
-          updatedSyllabusIds = `${selected_syllabus},${syllabusId}`;
-        } else {
-          console.log(
-            `Syllabus ${syllabusId} is already selected, nothing added`
-          );
-          return;
-        }
+        console.log(`Syllabus ${syllabusId} is already selected, nothing added`);
+        return;
       }
 
       const { data, error } = await supabase
         .from("profiles")
-        .update({ selected_syllabus: updatedSyllabusIds })
+        .update({ active_syllabus: syllabus_ids.join(",") })
         .eq("id", session.user.id);
 
       if (error) {
@@ -85,8 +87,7 @@
         return;
       }
 
-      selected_syllabus = updatedSyllabusIds;
-      profile.selected_syllabus = updatedSyllabusIds;
+      profile.selected = syllabus_ids.join(",");
     } catch (error) {
       console.error("Error adding to profile:", error);
     }
@@ -96,12 +97,6 @@
     showSearch = !showSearch;
   };
 
-  $: syllabus_ids = profile.selected_syllabus
-    .split(",")
-    .map((id: string) => parseInt(id, 10));
-  $: active_syllabus = syllabus_ids[0];
-  $: outcomes = profile.outcomes;
-  $: console.log("done outcmes -> ", outcomes)
   const switchActiveSyllabus = (id: number) => {
     active_syllabus = id;
   };
@@ -144,43 +139,10 @@
     }
   };
 
-  // Call fetchData to populate syllabusData
-  $: if (!selected_syllabus || selected_syllabus === "NULL") {
-    console.log("Empty sidebar");
-  } else {
-    fetchData(active_syllabus);
-  }
 </script>
 
-{#key selected_syllabus}
-  <Navbar
-    {supabase}
-    {selected_syllabus}
-    {switchActiveSyllabus}
-    {handleSignOut}
-    {toggleSearch}
-  />
-{/key}
-
-{#if !selected_syllabus || selected_syllabus === "NULL"}
-  <div class="font-space text-white bg-gray-800 min-h-screen w-full p-8">
-    <h1 class="text-3xl font-bold mb-4">Hi {username}, Welcome to Whizz!</h1>
-    <h2 class="text-xl mb-6">
-      I see you haven't selected your subjects yet, maybe try the search bar
-    </h2>
-  </div>
-{:else if syllabusData}
-  {#key syllabusData && outcomes}
-    <Content {syllabusData} {supabase}  {addOutcomesToProfile} {session} {outcomes}/>
-  {/key}
-{/if}
-
-<!-- Search button at the bottom right corner -->
-
-{#if showSearch}
-  <div
-    class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 p-4 rounded shadow-lg z-50"
-  >
-    <Search {syllabusIsSelected} {addToProfile} {supabase} />
-  </div>
+{#if !loading}
+  <h1>Finished loading</h1>
+{:else}
+  <h1>Still loading</h1>
 {/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { writable } from "svelte/store";
   import type { SupabaseClient } from "@supabase/supabase-js";
+  import { LOGONSERVER } from "$env/static/private";
 
   export let supabase: SupabaseClient;
   export let syllabusIsSelected: (syllabusId: number) => boolean;
@@ -43,8 +44,8 @@
   };
 
   $: search(query);
-  // Reactive statement to trigger search on query change
-  export const selectedSyllabus = writable<any>(null);
+
+  export let selectedSyllabus = writable<any>(null);
 
   const openPopup = (result: any) => {
     selectedSyllabus.set(result);
@@ -78,7 +79,7 @@
 </div>
 
 <!-- Popup/modal for selected syllabus -->
-{#if $selectedSyllabus !== null}
+{#if $selectedSyllabus !== null && $selectedSyllabus !== ""}
   <div class="popup-background">
     <div class="popup-content">
       <h2>{$selectedSyllabus.syllabus_name}</h2>
