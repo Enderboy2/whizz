@@ -35,7 +35,7 @@
   <div class="navbar max-w-3xl mx-auto justify-between">
     <!-- Left side of navbar -->
     <div>
-      <a href="/" class="btn btn-ghost text-xl font-bold">PokéCSE</a>
+      <a href="/" class="btn btn-ghost text-xl font-bold">Whizz!</a>
     </div>
     <!-- Right side of navbar -->
     <div>

@@ -1,83 +1,178 @@
 <script lang="ts">
-  export let c;
+  import { ProgressBar } from "@skeletonlabs/skeleton";
+
+  export let c; // Chapter
   export let data;
 
   let { supabase, session } = data;
   $: ({ supabase, session } = data);
 
-  let topics: any[] = [];
+  let topics = [];
   let isOpen = false;
   let isLoading = false;
+  let totalOutcomes = 0;
+  let completedOutcomes = 0;
+  let completedTopics = 0;
 
-  // Fetch topics immediately on render
+  // Fetch topics and outcomes with progress
   const fetchTopics = async () => {
     isLoading = true;
+    console.log("Fetching topics for chapter:", c.chapter_id); // Debug log
+
     if (c && c.chapter_id && !topics.length) {
-      const { data, error } = await supabase
+      const { data: topicData, error: topicError } = await supabase
         .from("topics")
         .select()
         .eq("chapter_id", c.chapter_id);
-      if (error) {
-        console.error(error);
-        return null;
+
+      console.log("Topics fetched:", topicData); // Debug log
+
+      if (topicError) {
+        console.error("Error fetching topics:", topicError);
+        isLoading = false;
+        return;
       }
-      topics = data;
+
+      topics = topicData;
+
+      await Promise.all(
+        topics.map(async (t) => {
+          if (!t.topic_id) {
+            console.error("Invalid topic_id:", t);
+            return; // Skip invalid topic
+          }
+
+          console.log(`Fetching outcomes for topic: ${t.topic_id}`); // Debug log
+
+          // Fetch all outcomes for the topic
+          const { data: outcomes, error: outcomeError } = await supabase
+            .from("outcomes")
+            .select()
+            .eq("topic_id", t.topic_id);
+
+          console.log(`Outcomes for topic ${t.topic_id}:`, outcomes); // Debug log
+
+          if (outcomeError) {
+            console.error("Error fetching outcomes:", outcomeError);
+            return;
+          }
+
+          t.outcomes = outcomes;
+          totalOutcomes += outcomes.length;
+
+          if (outcomes.length > 0) {
+            const validOutcomeIds = outcomes
+              .map((o) => o.id)
+              .filter((id) => id);
+            console.log(
+              `Valid outcome IDs for topic ${t.topic_id}:`,
+              validOutcomeIds
+            ); // Debug log
+
+            const { data: progress, error: progressError } = await supabase
+              .from("user_progress")
+              .select("outcome_id")
+              .eq("user_email", session.user.email)
+              .in("outcome_id", validOutcomeIds);
+
+            console.log(`Progress for topic ${t.topic_id}:`, progress); // Debug log
+
+            if (progressError) {
+              console.error("Error fetching progress:", progressError);
+              return;
+            }
+
+            const completedOutcomeIds = progress.map((p) => p.outcome_id);
+            console.log(
+              `Completed outcome IDs for topic ${t.topic_id}:`,
+              completedOutcomeIds
+            ); // Debug log
+
+            t.completedOutcomes = outcomes.filter((o) =>
+              completedOutcomeIds.includes(o.id)
+            ).length;
+
+            completedOutcomes += t.completedOutcomes;
+
+            if (t.completedOutcomes === outcomes.length) {
+              completedTopics++;
+            }
+          }
+        })
+      );
     }
     isLoading = false;
   };
 
-  // Handle toggle open/close
   const toggleOpen = () => {
     isOpen = !isOpen;
   };
+
+  // Calculate chapter completion percentage
+  $: chapterCompletion = (completedTopics / topics.length) * 100 || 0;
+
   $: if (topics.length === 0) {
     fetchTopics();
   }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="cursor-pointer border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
-  rounded-md p-4 transition-transform duration-500 ease-in-out shadow-sm lg:hover:scale-105
-  max-w-full mx-4 max-h-fit"
+  class="cursor-pointer border border-gray-300 bg-white rounded-md p-4 shadow-sm max-w-full mx-4"
   on:click={toggleOpen}
 >
   <div class="flex justify-between items-center">
-    <h1 class="font-bold text-lg text-black dark:text-white">
+    <h1 class="font-bold text-lg text-black">
       {c.chapter_number}. {c.chapter_name}
     </h1>
-    <div class="text-gray-600 dark:text-gray-300 text-sm">
-      {topics.length} Topics
-    </div>
   </div>
 
-  <!-- Smooth opening and closing of the chapter content using max-height -->
+  <!-- Chapter Completion Progress Bar -->
+  <ProgressBar
+    value={chapterCompletion}
+    max={100}
+    meter="bg-primary"
+    track="bg-white"
+    height="h-2"
+    rounded="rounded-sm"
+  />
+
   <div
-    class={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-[1000px]" : "max-h-0"}`}
+    class={`overflow-hidden transition-all duration-500 ${
+      isOpen ? "max-h-[1000px]" : "max-h-0"
+    }`}
   >
     <div class="mt-2">
-      <!-- Placeholder while loading -->
       {#if isLoading}
-        <div class="text-center p-4 text-gray-500 dark:text-gray-300">
-          Loading topics...
-        </div>
+        <div class="text-center p-4 text-gray-500">Loading topics...</div>
       {/if}
 
-      <!-- Topics are rendered once fetched -->
       {#if !isLoading && topics.length > 0}
         {#each topics as t}
-          <a
-            href={`/topic/${t.topic_id}`}
-            class="bg-gray-100 dark:bg-gray-700 text-black dark:text-white rounded-md m-1 py-2 px-3 font-semibold block hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
-            {t.topic_name}
-          </a>
+          <div class="mb-2">
+            <a
+              href={`/topic/${t.topic_id}`}
+              class="bg-gray-100 text-black rounded-md py-2 px-3 font-semibold block hover:bg-gray-200"
+            >
+              {t.topic_name}
+            </a>
+
+            <ProgressBar
+              value={(t.completedOutcomes / t.outcomes.length) * 100}
+              max={100}
+              meter="bg-secondary"
+              track="bg-white"
+              height="h-2"
+              rounded="rounded-sm"
+            />
+          </div>
         {/each}
       {/if}
 
-      <!-- No topics case -->
       {#if !isLoading && topics.length === 0}
-        <div class="text-center p-4 text-gray-500 dark:text-gray-300">
-          No topics available for this chapter.
+        <div class="text-center p-4 text-gray-500">
+          <ProgressBar value={undefined} />
         </div>
       {/if}
     </div>

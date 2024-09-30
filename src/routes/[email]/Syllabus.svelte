@@ -30,9 +30,9 @@
 
 {#if activeSyllabus && chapters?.length !== 0}
   <div
-    class="w-full flex flex-col justify-center items-center gap-4 px-4 max-w-screen-lg mx-auto min-h-fit overflow-scroll pb-4 bg-white"
+    class="w-full flex flex-col justify-center items-center gap-4 px-4 min-w-screen-lg px-auto min-h-fit overflow-scroll pb-4 bg-white"
   >
-    <h1 class="text-4xl font-bold text-center">
+    <h1 class="text-4xl font-bold text-center text-black">
       {activeSyllabus.syllabus_name}
     </h1>
     <div class="flex flex-row gap-3 justify-center mb-4">

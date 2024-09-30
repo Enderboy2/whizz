@@ -11,7 +11,7 @@ export default {
       },
     },
   },
-  darkMode: 'media', // Use 'class' to switch themes by adding a class to the root element
+  darkMode: 'selector', // Use 'class' to switch themes by adding a class to the root element
   plugins: [
     require('daisyui'),
     skeleton({

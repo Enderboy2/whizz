@@ -135,6 +135,9 @@
       "use",
       "define",
       "investigate",
+      "illustrate",
+      "interpret",
+      "discuss",
     ];
     const colonIndex = outcome_name.indexOf(":");
     let formattedTitle = outcome_name;
@@ -151,7 +154,7 @@
         .split(" ")
         .map((word) => {
           return actionWords.includes(word.toLowerCase())
-            ? `<span class="text-blue-600 dark:text-blue-400 font-bold text-xl">${word}</span>`
+            ? `<span class="text-blue-600 font-bold text-xl">${word}</span>`
             : word;
         })
         .join(" ");
@@ -165,7 +168,7 @@
         .split(" ")
         .map((word) => {
           return actionWords.includes(word.toLowerCase())
-            ? `<span class="text-blue-600 dark:text-blue-400 font-bold text-xl">${word}</span>`
+            ? `<span class="text-blue-600  font-bold text-xl">${word}</span>`
             : word;
         })
         .join(" ");
@@ -179,25 +182,26 @@
   };
 </script>
 
-<div class="flex flex-col mt-16 min-h-screen">
+<div class="flex flex-col mt-16 min-h-screen text-black">
   <div class="p-4 flex items-center fixed bg-white border-2 rounded-sm ml-2">
-    <button on:click={goBackToSyllabus} class="btn font-bold py-2 px-4 rounded">
+    <button
+      on:click={goBackToSyllabus}
+      class="btn font-bold py-2 px-4 border-none bg-white"
+    >
       ⬅
     </button>
-    <h1 class="text-2xl font-bold ml-3 text-left">
+    <h1 class="text-2xl font-bold ml-3 text-left text-black">
       {topic_name || "Loading..."}
     </h1>
   </div>
 
   <div class="p-6">
     {#if isLoading}
-      <div class="text-center p-4 text-gray-500 dark:text-gray-300">
-        Loading outcomes...
-      </div>
+      <div class="text-center p-4 text-gray-500">Loading outcomes...</div>
     {/if}
 
     {#if !isLoading && outcomes.length > 0}
-      <ul class="space-y-4 mt-20">
+      <ul class="space-y-4 mt-28">
         {#each outcomes as outcome}
           <li
             class="flex items-baseline space-x-3 p-2 rounded-md transition-transform duration-200 ease-in-out lg:hover:bg-gray-100 lg:hover:scale-105"
@@ -212,7 +216,7 @@
             <label for={`outcome-${outcome.id}`} class="text-lg font-semibold">
               {#if hasBulletPoints(outcome.outcome_name)}
                 {@html formatOutcomeName(outcome.outcome_name).mainTitle}
-                <ul class="list-disc ml-4 text-gray-800 dark:text-gray-300">
+                <ul class="list-disc ml-4 text-gray-800">
                   {#each formatOutcomeName(outcome.outcome_name).bulletPoints as point}
                     <p>{@html point}</p>
                   {/each}
@@ -229,7 +233,7 @@
     {/if}
 
     {#if !isLoading && outcomes.length === 0}
-      <div class="text-center p-4 text-gray-500 dark:text-gray-300">
+      <div class="text-center p-4 text-gray-500">
         No outcomes available for this topic.
       </div>
     {/if}

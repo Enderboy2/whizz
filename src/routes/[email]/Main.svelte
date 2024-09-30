@@ -3,6 +3,7 @@
   import { page } from "$app/stores";
   import { onDestroy } from "svelte";
   import Syllabus from "./Syllabus.svelte";
+  import Search from "./Search.svelte";
 
   export let data;
   let { supabase, session } = data;
@@ -12,6 +13,7 @@
   export let saveProfile;
   let syllabuses: any[] = [];
   let activeSyllabus: any = null;
+  let isSearch = false;
 
   const fetchSyllabuses = async () => {
     if (profile.syllabus_ids && profile.syllabus_ids.length > 0) {
@@ -34,6 +36,10 @@
     }
   };
 
+  const toggleSearch = () => {
+    isSearch = !isSearch;
+  };
+
   $: if (profile?.syllabus_ids) {
     fetchSyllabuses();
   }
@@ -43,8 +49,17 @@
   {#if activeSyllabus}
     <Syllabus {activeSyllabus} {data} />
     <button
-      class="btn fixed top-20 left-2"
+      class="btn fixed top-20 left-2 bg-white border-2 text-center
+      "
       on:click={() => (activeSyllabus = undefined)}>⬅</button
+    >
+  {:else if isSearch}
+    <div class="w-auto h-auto flex flex-col justify-center items-center mt-24">
+      <Search {profile} {saveProfile} {data} />
+    </div>
+    <button
+      class="btn fixed top-20 left-2 bg-white border-none"
+      on:click={() => toggleSearch()}>⬅</button
     >
   {:else}
     <div
@@ -55,7 +70,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
-          class="card p-6 card-hover flex flex-row justify-between items-center cursor-pointer"
+          class=" p-6 card-hover flex flex-row justify-between items-center cursor-pointer bg-white border-2 rounded-md border-gray-300"
           on:click={() => (activeSyllabus = s)}
         >
           <h1 class="font-bold text-3xl">{s.syllabus_name}</h1>
@@ -67,6 +82,9 @@
           </h2>
         </div>
       {/each}
+      <button class="btn btn-primary mt-4" on:click={() => toggleSearch()}
+        >add another syllabus</button
+      >
     </div>
   {/if}
 {/if}
