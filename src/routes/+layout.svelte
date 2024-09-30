@@ -40,7 +40,10 @@
     <!-- Right side of navbar -->
     <div>
       {#if session == null}
-        <button on:click={() => goto("/login")}>Login</button>
+        <button
+          on:click={() => goto("/login")}
+          class="btn btn-ghost font-semibold mr-2">Login</button
+        >
       {:else}
         <button
           class="ml-2 btn btn-ghost"

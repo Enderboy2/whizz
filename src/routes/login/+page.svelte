@@ -8,25 +8,22 @@
   console.log(supabase);
   console.log(session);
 
-  $: if (session?.user.email) {
+  $: if (session?.user?.email) {
     goto("/" + session.user.email);
   } else {
-    console.log("logged out bitch!");
+    console.log("logged out!");
   }
 </script>
 
-<div class="hero min-h-screen bg-secondary">
-  <div class="hero-content w-[800px]">
+<div class="hero min-h-screen bg-white max-w-screen">
+  <div class="hero-content w-auto">
     <div class="flex flex-col">
-      <p>Create an account or login below!</p>
+      <p class="font-semibold">Create an account or login below!</p>
       <Auth
         supabaseClient={supabase}
         theme="light"
         appearance={{
           theme: ThemeSupa,
-          style: {
-            input: "width: 400px;",
-          },
         }}
         providers={["google", "github"]}
       />
