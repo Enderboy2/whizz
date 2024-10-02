@@ -5,8 +5,8 @@
   import type { SupabaseClient } from "@supabase/supabase-js";
   import { goto } from "$app/navigation";
   import { marked } from "marked";
-  import { VITE_GOOGLE_GENERATIVE_API_KEY } from "$env/static/public";
-  const apiKey = VITE_GOOGLE_GENERATIVE_API_KEY;
+
+  const apiKey = import.meta.env.VITE_GOOGLE_GENERATIVE_API_KEY;
 
   interface Outcome {
     id: number;
