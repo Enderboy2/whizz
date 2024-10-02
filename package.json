@@ -18,6 +18,7 @@
     "@types/node": "^22.5.4",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.12.10",
+    "markdown-it-style": "^1.0.0",
     "postcss": "^8.4.38",
     "prettier": "3.3.3",
     "svelte": "^4.2.7",
@@ -30,11 +31,19 @@
   "type": "module",
   "dependencies": {
     "@floating-ui/dom": "^1.6.11",
+    "@google/generative-ai": "^0.20.0",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/auth-ui-svelte": "^0.2.9",
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.43.5",
+    "@tailwindcss/typography": "^0.5.15",
+    "axios": "^1.7.7",
+    "highlight.js": "^11.10.0",
     "lodash": "^4.17.21",
-    "lucide-svelte": "^0.446.0"
+    "lucide-svelte": "^0.446.0",
+    "markdown-it": "^14.1.0",
+    "marked-gfm-heading-id": "^4.1.0",
+    "marked-mangle": "^1.1.9",
+    "md-block": "^0.0.1"
   }
 }

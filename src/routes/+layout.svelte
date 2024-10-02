@@ -31,11 +31,12 @@
 <Drawer />
 
 <!-- Navbar -->
-<div class="bg-white justify-between fixed top-0 left-0 right-0">
+<div class="bg-white justify-between fixed top-0 left-0 right-0 z-10">
   <div class="navbar max-w-3xl mx-auto justify-between">
     <!-- Left side of navbar -->
     <div>
       <a href="/" class="btn btn-ghost text-xl font-bold">Whizz!</a>
+      <h1 class="badge variant-soft-success p-1 ml-2">Experimental</h1>
     </div>
     <!-- Right side of navbar -->
     <div>

@@ -10,7 +10,7 @@
   </h1>
   <p class="text-lg text-gray-700 mb-8 text-center font-semibold">
     Whizz! helps IGCSE students keep track of their syllabus completion and
-    manage their study progress efficiently, for now😇.
+    manage their study progress efficiently(with AI! 😉), for now😇.
   </p>
 
   <a

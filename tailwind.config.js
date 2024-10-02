@@ -16,6 +16,7 @@ export default {
     require('daisyui'),
     skeleton({
       themes: { preset: [ "gold-nouveau" ] }
-    })
+    }),
+    require('@tailwindcss/typography')
   ],
 };
