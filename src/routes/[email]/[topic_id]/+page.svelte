@@ -13,6 +13,7 @@
     outcome_name: string;
     completed: boolean; // Keep track of completion locally for UI
     explanation: string;
+    notes_examples: string;
   }
 
   export const load: PageLoad = async ({ data }: { data: any }) => {
@@ -46,18 +47,24 @@
     );
   };
 
-  const explain = async (outcomeName: string) => {
+  const explain = async (outcomeName: string, notesExamples: string) => {
     try {
       console.log("Started generating...");
 
       const result = await model.generateContent(
         `Please provide a JSON structure for the following IGCSE learning outcome:` +
+          '"' +
           outcomeName +
+          '" ' +
+          " here are some examples of notes for this outcome(may be empty): " +
+          '"' +
+          notesExamples +
+          '"' +
           `
 You need to create a JSON file with the following fields only:
 
 title: The title of the learning outcome.
-explanation: A concise so extremly detailed explanation of the learning outcome. Use Markdown syntax for the explanation section only (e.g., headers, lists, bold, etc.).
+explanation: A concise so extremly detailed explanation of the learning outcome and its notes,explaining the exmaples aswell. Use Markdown syntax for the explanation section only (e.g., headers, lists, bold, etc.).
 study_methods:
 higher_order: List study methods that involve critical thinking, analysis, or application.
 lower_order: List study methods that focus on memorization, understanding facts, or basic concepts.
@@ -254,6 +261,9 @@ again just raw text this is very IMPORTANT!!!`
       "illustrate",
       "interpret",
       "discuss",
+      "understand",
+      "find",
+      "solve",
     ];
     const colonIndex = outcome_name.indexOf(":");
     let formattedTitle = outcome_name;
@@ -448,7 +458,7 @@ again just raw text this is very IMPORTANT!!!`
                       showExplanation = true;
                       currentOutcome = outcome.id;
                       txt = "";
-                      explain(outcome.outcome_name);
+                      explain(outcome.outcome_name, outcome.notes_examples);
                     }}
                     >Explain
                   </button>

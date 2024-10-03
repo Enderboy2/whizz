@@ -66,22 +66,26 @@
       class="h-full w-screen items-center justify-center flex flex-col text-center min-h-fit"
     >
       <h1 class="mb-6 font-bold text-xl">What do you want to study?</h1>
-      {#each syllabuses as s}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class=" p-6 card-hover flex flex-row justify-between items-center cursor-pointer bg-white border-2 rounded-md border-gray-300"
-          on:click={() => (activeSyllabus = s)}
-        >
-          <h1 class="font-bold text-3xl">{s.syllabus_name}</h1>
-          <h2 class="badge variant-outline ml-6">
-            {s.syllabus_level}
-          </h2>
-          <h2 class="badge variant-outline-tertiary ml-2">
-            {s.syllabus_code}
-          </h2>
-        </div>
-      {/each}
+      <div class=" flex flex-col gap-4">
+        {#each syllabuses as s}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            class=" p-6 card-hover flex flex-row justify-between items-center cursor-pointer bg-white border-2 rounded-md border-gray-300"
+            on:click={() => (activeSyllabus = s)}
+          >
+            <h1 class="font-bold text-3xl">{s.syllabus_name}</h1>
+            <div class=" ml-6">
+              <h2 class="badge variant-outline">
+                {s.syllabus_level}
+              </h2>
+              <h2 class="badge variant-outline-tertiary ml-2">
+                {s.syllabus_code}
+              </h2>
+            </div>
+          </div>
+        {/each}
+      </div>
       <button class="btn btn-primary mt-4" on:click={() => toggleSearch()}
         >add another syllabus</button
       >
