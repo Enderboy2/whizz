@@ -14,12 +14,12 @@
  
   // Define Tailwind classes for each heading level
   const headingClasses: { [key: number]: string } = {
-    1: 'text-4xl font-bold mb-4 text-gray-900',
-    2: 'text-3xl font-semibold mb-4 text-gray-800',
-    3: 'text-2xl font-medium mb-3 text-gray-700',
-    4: 'text-xl font-medium mb-2 text-gray-600',
-    5: 'text-lg font-semibold mb-1 text-gray-500',
-    6: 'text-base font-semibold text-gray-400',
+    1: 'text-4xl font-bold mb-4 text-gray-900 mt-0',
+    2: 'text-3xl font-semibold mb-4 text-gray-800 mt-0',
+    3: 'text-2xl font-medium mb-3 text-gray-700 mt-0',
+    4: 'text-xl font-medium mb-2 text-gray-600 mt-0',
+    5: 'text-lg font-semibold mb-1 text-gray-500 mt-0',
+    6: 'text-base font-semibold text-gray-400 mt-0',
   };
 
   return `<h${depth} class="${headingClasses[depth] || 'text-base font-semibold'}">${text}</h${depth}>`;
@@ -381,12 +381,12 @@ again just raw text this is very IMPORTANT!!!`
                       <p>Generating from ai...</p>
                     {:else}
                       <div class="prose prose-indigo p-2 w-full max-w-none !text-black">
-                        <h1 class="text-4xl font-bold mb-1 !text-black">{txt.title}</h1>
+                        <h1 class="text-4xl font-bold mb-1 mt-0 !text-black">{txt.title}</h1>
                         <div
                           class="flex flex-row text-sm h-6 items-baseline mb-1 !text-black"
                         >
                           <h2
-                            class="badge variant-filled max-h-fit p-2 text-white m-0 text-sm"
+                            class="badge !bg-black max-h-fit p-2 !text-white m-0 text-sm"
                           >
                             {txt.difficulty || ""}
                           </h2>
