@@ -6,6 +6,33 @@
   import { goto } from "$app/navigation";
   import { marked } from "marked";
 
+
+  
+  const renderer = new marked.Renderer();
+  renderer.heading = ({ depth, tokens }: { depth: number; tokens: any[] }) => {
+  const text = tokens.map((token) => token.raw).join(""); // Combine tokens to get the raw heading text
+ 
+  // Define Tailwind classes for each heading level
+  const headingClasses: { [key: number]: string } = {
+    1: 'text-4xl font-bold mb-4 text-gray-900',
+    2: 'text-3xl font-semibold mb-4 text-gray-800',
+    3: 'text-2xl font-medium mb-3 text-gray-700',
+    4: 'text-xl font-medium mb-2 text-gray-600',
+    5: 'text-lg font-semibold mb-1 text-gray-500',
+    6: 'text-base font-semibold text-gray-400',
+  };
+
+  return `<h${depth} class="${headingClasses[depth] || 'text-base font-semibold'}">${text}</h${depth}>`;
+};
+renderer.strong = ({ tokens }: { tokens: any[] }): string => {
+  let explanationNumberColors = ["text-secondary", "text-primary"];
+  let explanationNumberColor =
+    explanationNumberColors[Math.floor(Math.random() * explanationNumberColors.length)]; 
+  console.log(explanationNumberColor);
+  const text = tokens.map((token) => token.raw).join(""); // Extract the bold text from tokens
+  return `<strong class="${explanationNumberColor} font-bold">${text}</strong>`;
+};
+
   const apiKey = import.meta.env.VITE_GOOGLE_GENERATIVE_API_KEY;
 
   interface Outcome {
@@ -338,7 +365,7 @@ again just raw text this is very IMPORTANT!!!`
             {#if showExplanation && currentOutcome == outcome.id}
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
-                class="flex flex-col items-baseline space-x-3 card bg-white p-2 w-full max-w-none text-wrap"
+                class="flex flex-col items-baseline space-x-3 card !bg-white !text-black p-2 w-full max-w-none text-wrap"
                 on:mouseenter={() => {
                   showButton = true;
                   heldOutcome = outcome.id;
@@ -353,10 +380,10 @@ again just raw text this is very IMPORTANT!!!`
                     {#if txt == ""}
                       <p>Generating from ai...</p>
                     {:else}
-                      <div class="prose prose-indigo p-2 w-full max-w-none">
-                        <h1 class="text-4xl font-bold mb-1">{txt.title}</h1>
+                      <div class="prose prose-indigo p-2 w-full max-w-none !text-black">
+                        <h1 class="text-4xl font-bold mb-1 !text-black">{txt.title}</h1>
                         <div
-                          class="flex flex-row text-sm h-6 items-baseline mb-0"
+                          class="flex flex-row text-sm h-6 items-baseline mb-1 !text-black"
                         >
                           <h2
                             class="badge variant-filled max-h-fit p-2 text-white m-0 text-sm"
@@ -364,16 +391,16 @@ again just raw text this is very IMPORTANT!!!`
                             {txt.difficulty || ""}
                           </h2>
                         </div>
-                        {@html marked(txt.explanation, { breaks: true })}
+                        {@html marked(txt.explanation, { renderer,breaks: true })}
                         <hr class="my-2" />
                         {#if txt.study_methods}
                           {#if txt.study_methods.higher_order && txt.study_methods.lower_order}
-                            <div class="flex flex-col">
-                              <h1 class="text-3xl font-bold my-0 mb-2">
+                            <div class="flex flex-col !text-black">
+                              <h1 class="text-3xl font-bold my-0 mb-2 !text-black">
                                 Study Methods 😉
                               </h1>
                               {#if txt.study_methods.higher_order.length > 0}
-                                <h2 class="text-2xl font-semibold my-0 ml-2">
+                                <h2 class="text-2xl font-semibold my-0 ml-2 !text-black">
                                   Higher Order
                                 </h2>
                                 <ul class="ml-2">
@@ -383,7 +410,7 @@ again just raw text this is very IMPORTANT!!!`
                                 </ul>
                               {/if}
                               {#if txt.study_methods.lower_order.length > 0}
-                                <h2 class="text-2xl font-semibold my-0 ml-2">
+                                <h2 class="text-2xl font-semibold my-0 ml-2 !text-black">
                                   Lower Order
                                 </h2>
                                 <ul class="ml-2">

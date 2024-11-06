@@ -7,12 +7,15 @@
   let { supabase, session } = data;
   $: ({ supabase, session } = data);
 
-  let topics = [];
+  let topics: any[] = [];
   let isOpen = false;
   let isLoading = false;
   let totalOutcomes = 0;
   let completedOutcomes = 0;
   let completedTopics = 0;
+  let chapterNumberColors = ["text-secondary", "text-primary"];
+  let chapterNumberColor =
+    chapterNumberColors[Math.floor(Math.random() * chapterNumberColors.length)];
 
   // Fetch topics and outcomes with progress
   const fetchTopics = async () => {
@@ -62,8 +65,8 @@
 
           if (outcomes.length > 0) {
             const validOutcomeIds = outcomes
-              .map((o) => o.id)
-              .filter((id) => id);
+              .map((o: any) => o.id)
+              .filter((id: any) => id);
             console.log(
               `Valid outcome IDs for topic ${t.topic_id}:`,
               validOutcomeIds
@@ -82,13 +85,13 @@
               return;
             }
 
-            const completedOutcomeIds = progress.map((p) => p.outcome_id);
+            const completedOutcomeIds = progress.map((p: any) => p.outcome_id);
             console.log(
               `Completed outcome IDs for topic ${t.topic_id}:`,
               completedOutcomeIds
             ); // Debug log
 
-            t.completedOutcomes = outcomes.filter((o) =>
+            t.completedOutcomes = outcomes.filter((o: any) =>
               completedOutcomeIds.includes(o.id)
             ).length;
 
@@ -123,8 +126,9 @@
   on:click={toggleOpen}
 >
   <div class="flex justify-between items-center">
-    <h1 class="font-bold text-lg text-black">
-      {c.chapter_number}. {c.chapter_name}
+    <h1 class="font-bold text-xl text-black">
+      <span class={chapterNumberColor}>{c.chapter_number}.</span>
+      {c.chapter_name}
     </h1>
   </div>
 
@@ -153,7 +157,7 @@
           <div class="mb-2">
             <a
               href={`/topic/${t.topic_id}`}
-              class="bg-gray-100 text-black rounded-md py-2 px-3 font-semibold block hover:bg-gray-200"
+              class="bg-black text-white rounded-md py-2 px-3 font-semibold block text-center"
             >
               {t.topic_name}
             </a>

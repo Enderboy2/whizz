@@ -36,22 +36,23 @@
       {activeSyllabus.syllabus_name}
     </h1>
     <div class="flex flex-row gap-3 justify-center mb-4">
-      <h2 class="badge bg-gray-700 text-white rounded-md">
+      <h2 class="badge bg-black text-white rounded-md">
         {activeSyllabus.syllabus_level}
       </h2>
-      <h2 class="badge bg-gray-700 text-white rounded-md">
+      <h2 class="badge bg-black text-white rounded-md">
         {activeSyllabus.syllabus_board}
       </h2>
-      <h2 class="badge bg-gray-700 text-white rounded-md">
+      <h2 class="badge bg-black text-white rounded-md">
         {activeSyllabus.syllabus_code}
       </h2>
     </div>
     <div class="w-full">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 gap-6">
         {#each chapters as c}
           <Chapter {c} {data} />
         {/each}
       </div>
     </div>
   </div>
+  
 {/if}

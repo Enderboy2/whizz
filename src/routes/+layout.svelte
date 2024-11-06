@@ -36,7 +36,7 @@
     <!-- Left side of navbar -->
     <div>
       <a href="/" class="btn btn-ghost text-xl font-bold">Whizz!</a>
-      <h1 class="badge variant-soft-success p-1 ml-2">Experimental</h1>
+      <h1 class="badge p-1 ml-2 text-black bg-green-200 border-white">Experimental</h1>
     </div>
     <!-- Right side of navbar -->
     <div>
