@@ -5,11 +5,20 @@
     completed: boolean;
     explanation: string;
     notes_examples: string;
+    has_flashcards: boolean;
+    outcome_number: number;
   }
 
   export let outcome: Outcome;
   let supabase: SupabaseClient;
   let userEmail: string;
+  export let chapter_id: number;
+  export let syllabus_id: number;
+  export let topic_id: string;
+  export let chapter_name: string;
+  export let syllabus_name: string;
+  export let topic_name: string;
+  console.log("outcome.svelte ->", syllabus_name, chapter_name, topic_name);
   const apiKey = import.meta.env.VITE_GOOGLE_GENERATIVE_API_KEY;
   let flipDirection = 1;
   let startX = 0;
@@ -17,6 +26,7 @@
   let showFront = true;
   let flipping = false;
   let isLoading = true;
+  let flashcards: any;
 
   function handleTouchStart(event: TouchEvent) {
     startX = event.touches[0].clientX;
@@ -34,6 +44,23 @@
         showFront = currentRotation % 360 === 0;
         if (!showFront && txt == "") {
           await explain(outcome.outcome_name, outcome.notes_examples);
+          // flashcards = await generateFlashcards(
+          //   outcome.outcome_name,
+          //   outcome.notes_examples
+        }
+
+        const viewportHeight = window.innerHeight;
+        const currentY = Math.floor(viewportHeight / 2); // Get the middle of the viewport
+        const currentElement = document.elementFromPoint(
+          window.innerWidth / 2,
+          currentY
+        );
+
+        if (currentElement) {
+          currentElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
         }
       }, 150);
     }
@@ -156,9 +183,95 @@
     }
   };
 
+  const generateFlashcards = async (
+    outcomeName: string,
+    notesExamples: string,
+    maxRetries = 5
+  ) => {
+    let attempts = 0;
+    let validFlashcards = null;
+
+    while (attempts < maxRetries) {
+      try {
+        console.log(`Attempt ${attempts + 1} to generate flashcards...`);
+
+        const result = await model.generateContent(
+          `Act like an A-level IGCSE tutor and Generate a set of professional(exam-grade using igcse action words and avoid repeating) flashcards for the following IGCSE learning outcome, and avoid repeating: "${outcomeName}". Here are some example notes for this outcome (may be empty): "${notesExamples}".
+        
+        The number of flashcards should balance difficulty:
+        
+        - Easy outcomes: 3-5 flashcards.
+        - Medium outcomes: 6-8 flashcards.
+        - Hard outcomes: 9-12 flashcards.
+  
+        Each flashcard should include a question and an answer in the following format:
+        
+        {
+          "flashcards": [
+            {
+              "question": "string",
+              "answer": "string"
+            }
+          ]
+        }
+  
+        Do not include any additional text or explanations. Provide the JSON output only not in a codeblock just raw text. This is very IMPORTANT!!!`
+        );
+
+        if (
+          result?.response?.candidates &&
+          result.response.candidates.length > 0
+        ) {
+          const firstCandidate = result.response.candidates[0];
+
+          const generatedText = firstCandidate.content.parts[0].text || "";
+          //console.log("Generated flashcards: ", generatedText);
+
+          try {
+            const parsedData = JSON.parse(generatedText);
+
+            // Validate the structure
+            if (
+              parsedData &&
+              Array.isArray(parsedData.flashcards) &&
+              parsedData.flashcards.every(
+                (card: any) =>
+                  typeof card.question === "string" &&
+                  typeof card.answer === "string"
+              )
+            ) {
+              validFlashcards = parsedData;
+
+              break; // Exit loop if valid structure found
+            } else {
+              throw new Error("Invalid flashcard structure.");
+            }
+          } catch (error) {
+            console.error("Error parsing or validating JSON:", error);
+          }
+        } else {
+          console.error("No candidates found in response.");
+        }
+      } catch (error) {
+        console.error("Error while generating flashcards:", error);
+      }
+
+      attempts++;
+    }
+
+    if (validFlashcards) {
+      return validFlashcards;
+    } else {
+      return {
+        error: "Failed to generate valid flashcards after multiple attempts.",
+      };
+    }
+  };
+
   import { marked } from "marked";
   import { onMount } from "svelte";
   import { page } from "$app/stores";
+  import OutcomeFlashcards from "./outcomeFlashcards.svelte";
 
   const renderer = new marked.Renderer();
   renderer.heading = ({ depth, tokens }: { depth: number; tokens: any[] }) => {
@@ -356,17 +469,200 @@
   const hasBulletPoints = (outcome_name: string) => {
     return outcome_name.includes(":");
   };
+  let lastTap = 0;
+  let showFullScreen = false;
+  let isDoubleTapped = false;
+
+  async function handleTap() {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+
+    if (tapLength < 300 && tapLength > 0) {
+      isDoubleTapped = true; // Double tap detected
+      showFullScreen = !showFullScreen; // Toggle the modal visibility
+      // flashcards = {
+      //   flashcards: [
+      //     {
+      //       question: "whats the answer dummy, you should know it",
+      //       answer: "i dont know!!! 😭😭😭",
+      //     },
+      //     { question: "asdf", answer: "asdf" },
+      //     {
+      //       question: "Answer me, you should know it!!",
+      //       answer: "HELP ME!!! 😭😭😭",
+      //     },
+      //   ],
+      // };
+
+      if (outcome.has_flashcards) {
+        flashcards = await fetchFlashcards(outcome.id.toString());
+      } else {
+        flashcards = await generateFlashcards(
+          outcome.outcome_name,
+          outcome.notes_examples
+        );
+        await insertFlashcards(outcome.id.toString(), flashcards);
+        await console.log(setHasFlashcards(outcome.id.toString(), true));
+        flashcards = await fetchFlashcards(outcome.id.toString());
+        outcome.has_flashcards = true;
+      }
+    } else {
+      isDoubleTapped = false; // Reset if it's not a double tap
+    }
+
+    lastTap = currentTime;
+  }
+
+  // function handleBackdropClick(event: { target: any; currentTarget: any }) {
+  //   console.log("been here");
+  //   if (event.target === event.currentTarget && !isDoubleTapped) {
+  //     console.log("clicked");
+  //     showFullScreen = false;
+  //   }
+  // }
+  async function insertFlashcards(outcomeId: string, parsedData: any) {
+    if (
+      parsedData &&
+      Array.isArray(parsedData.flashcards) &&
+      parsedData.flashcards.every(
+        (card: any) =>
+          typeof card.question === "string" && typeof card.answer === "string"
+      )
+    ) {
+      // Extract valid flashcards
+      const validFlashcards = parsedData.flashcards;
+
+      // Prepare data for bulk insert
+      const flashcardsToInsert = validFlashcards.map((card: any) => ({
+        outcome_id: outcomeId,
+        question: card.question,
+        answer: card.answer,
+        chapter_id: chapter_id,
+        syllabus_id: syllabus_id,
+        topic_id: topic_id,
+        syllabus_name: syllabus_name,
+        chapter_name: chapter_name,
+        topic_name: topic_name,
+      }));
+
+      try {
+        // Insert data into the table
+        const { data, error } = await supabase
+          .from("flashcards") // Replace with your table name
+          .insert(flashcardsToInsert);
+
+        if (error) {
+          console.error("Error inserting flashcards:", error);
+          return { success: false, error };
+        }
+
+        console.log("Flashcards inserted successfully:", data);
+        return { success: true, data };
+      } catch (error) {
+        console.error("Unexpected error:", error);
+        return { success: false, error };
+      }
+    } else {
+      console.error("Invalid flashcards structure");
+      return { success: false, error: "Invalid flashcards structure" };
+    }
+  }
+  async function fetchFlashcards(outcomeId: string) {
+    try {
+      const { data, error } = await supabase
+        .from("flashcards") // Replace with your table name
+        .select("question, answer, id") // Select only the required columns
+        .eq("outcome_id", outcomeId); // Filter by outcome_id
+
+      if (error) {
+        console.error("Error fetching flashcards:", error);
+        return { success: false, error };
+      }
+
+      if (data) {
+        const flashcards = data.map((row: any) => ({
+          question: row.question,
+          answer: row.answer,
+          id: row.id,
+        }));
+
+        return { success: true, flashcards };
+      }
+
+      return { success: false, flashcards: [] };
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return { success: false, error };
+    }
+  }
+  async function setHasFlashcards(
+    outcomeId: string,
+    hasFlashcards: boolean = true
+  ) {
+    try {
+      const { data, error } = await supabase
+        .from("outcomes") // Replace with your table name
+        .update({ has_flashcards: hasFlashcards }) // Update the `has_flashcards` property
+        .eq("id", outcomeId); // Filter by the specific outcome ID
+
+      if (error) {
+        console.error("Error updating outcome:", error);
+        return { success: false, error };
+      }
+
+      console.log("Outcome updated successfully:", data);
+      return { success: true, data };
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return { success: false, error };
+    }
+  }
 </script>
 
 {#if isLoading}
   <div class=""></div>
 {:else}
   {#key outcome.outcome_name}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    {#if showFullScreen}
+      <div
+        class="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300 ease-in-out z-40 backdrop-blur-sm overflow-visible"
+        aria-hidden="true"
+      >
+        <div class="flex items-center justify-center h-screen overflow-visible">
+          <div
+            class=" rounded-md text-center max-w-sm w-full h-screen z-40 overflow-visible"
+          >
+            {#key flashcards}
+              {#if flashcards}
+                <OutcomeFlashcards class="z-50" {flashcards} />
+              {:else}
+                <div
+                  class=" h-full w-full flex flex-col justify-center items-center"
+                >
+                  <p class="text-2xl font-bold">Loading...</p>
+                </div>
+              {/if}
+            {/key}
+            <button
+              class=" btn btn-primary mt-4 px-4 py-2 rounded-md absolute top-2 left-2"
+              on:click={() => (showFullScreen = false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prevent scrolling and interaction with background content -->
+    {/if}
     <div
-      class="card-container w-74 mx-4 p-1 long-press-target"
+      class={`card-container w-74 mx-4 p-1 long-press-target ${showFullScreen ? "blur-md" : "blur-0"}`}
       on:touchstart={handleTouchStart}
       on:touchend={handleTouchEnd}
       use:longPress={{ duration: 1500, callback: handleLongPress }}
+      on:pointerdown={handleTap}
     >
       {#key progress}
         <div
@@ -407,7 +703,7 @@
             </div>
           </div>
         {:else}
-          <div class="card-side card-back p-4">
+          <div class="card-side card-back p-4 mb-2">
             {#if outcome.explanation == ""}
               {#key txt}
                 {#if txt == ""}
@@ -508,6 +804,11 @@
               handleLongPress();
             }}>Mark as learned</button
           >
+        </div>
+        <div
+          class=" absolute bottom-0 top-0 w-full flex justify-center items-center transform p-4 rounded-lg text-9xl text-primary font-bold opacity-45 -z-10"
+        >
+          <h1>{outcome.outcome_number}</h1>
         </div>
       </div>
     </div>

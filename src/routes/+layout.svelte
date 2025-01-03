@@ -36,7 +36,9 @@
     <!-- Left side of navbar -->
     <div>
       <a href="/" class="btn btn-ghost text-xl font-bold">Whizz!</a>
-      <h1 class="badge p-1 ml-2 text-black bg-green-200 border-white">Experimental</h1>
+      <h1 class="badge p-1 ml-2 text-black bg-green-200 border-white">
+        Experimental
+      </h1>
     </div>
     <!-- Right side of navbar -->
     <div>
@@ -46,6 +48,10 @@
           class="btn btn-ghost font-semibold mr-2">Login</button
         >
       {:else}
+        <button
+          class="btn bg-white border-none"
+          on:click={() => goto("/flashcards")}>🃏</button
+        >
         <button
           class="ml-2 btn btn-ghost"
           on:click={async () => {

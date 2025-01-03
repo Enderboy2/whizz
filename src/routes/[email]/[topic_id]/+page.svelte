@@ -11,6 +11,8 @@
     completed: boolean; // Keep track of completion locally for UI
     explanation: string;
     notes_examples: string;
+    has_flashcards: boolean;
+    outcome_number: number;
   }
 
   let outcomes: Outcome[] = [];
@@ -19,6 +21,10 @@
   let topic_name = "";
   let supabase: SupabaseClient;
   let userEmail: string;
+  let chapter_id: number;
+  let syllabus_id: number;
+  let syllabus_name = "";
+  let chapter_name = "";
   $: topic_id = $page.params.topic_id;
 
   export const load: PageLoad = async ({ data }: { data: any }) => {
@@ -42,6 +48,7 @@
         ...outcome,
         completed: false, // Initialize completed status
       }));
+      console.log(outcomes);
     }
 
     await fetchUserProgress();
@@ -66,13 +73,14 @@
       outcome.completed = completedOutcomes.has(outcome.id);
       console.log(outcome.completed);
     });
+    outcomes.sort((a, b) => a.outcome_number - b.outcome_number);
     isLoading = false;
   };
 
   const fetchTopicName = async () => {
     const { data, error } = await supabase
       .from("topics")
-      .select("topic_name")
+      .select()
       .eq("topic_id", topic_id)
       .single();
 
@@ -81,6 +89,55 @@
       topic_name = "Error loading topic name";
     } else {
       topic_name = data.topic_name;
+      chapter_id = data.chapter_id;
+      console.log(chapter_id);
+    }
+  };
+
+  const fetchSyllabusId = async () => {
+    console.log(typeof chapter_id);
+    const { data, error } = await supabase
+      .from("chapters")
+      .select()
+      .eq("chapter_id", chapter_id)
+      .single();
+
+    if (error) {
+      console.error(error);
+      topic_name = "Error loading topic name";
+    } else {
+      syllabus_id = data.syllabus_id;
+      console.log(syllabus_id);
+    }
+  };
+
+  const fetchSyllabusName = async () => {
+    const { data, error } = await supabase
+      .from("syllabus")
+      .select()
+      .eq("syllabus_id", syllabus_id)
+      .single();
+
+    if (error) {
+      console.error(error);
+      syllabus_name = "Error loading syllabus name";
+    } else {
+      syllabus_name = data.syllabus_name;
+    }
+  };
+
+  const fetchChapterName = async () => {
+    const { data, error } = await supabase
+      .from("chapters")
+      .select()
+      .eq("chapter_id", chapter_id)
+      .single();
+
+    if (error) {
+      console.error(error);
+      chapter_name = "Error loading topic name";
+    } else {
+      chapter_name = data.chapter_name;
     }
   };
 
@@ -90,12 +147,16 @@
     userEmail = session.user.email;
 
     await Promise.all([fetchOutcomes(), fetchTopicName(), fetchUserProgress()]);
+    await fetchChapterName();
+    await fetchSyllabusId();
+    await fetchSyllabusName();
+    console.log("page.svelte -> ", syllabus_name);
     isLoading = false;
     console.log(outcomes);
   });
 </script>
 
-{#if isLoading}
+{#if isLoading || !syllabus_id || !chapter_id || !topic_id || !syllabus_name || !chapter_name || !topic_name}
   <div class=""></div>
 {:else}
   <div
@@ -105,7 +166,15 @@
     {#key outcomes}
       {#each outcomes as outcome}
         {#key outcome.completed}
-          <Outcome {outcome} />
+          <Outcome
+            {topic_name}
+            {syllabus_name}
+            {chapter_name}
+            {topic_id}
+            {chapter_id}
+            {syllabus_id}
+            {outcome}
+          />
         {/key}
       {/each}
     {/key}
