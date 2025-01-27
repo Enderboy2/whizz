@@ -122,17 +122,9 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="cursor-pointer border border-gray-300 bg-white rounded-md p-4 shadow-sm max-w-full mx-4"
+  class="cursor-pointer border border-gray-300 bg-white rounded-md p-4 lg:p-6 shadow-sm max-w-full mx-1 lg:w-[33%] lg:mx-auto"
   on:click={toggleOpen}
 >
-  <div class="flex justify-between items-center">
-    <h1 class="font-bold text-xl text-black">
-      <span class={chapterNumberColor}>{c.chapter_number}.</span>
-      {c.chapter_name}
-    </h1>
-  </div>
-
-  <!-- Chapter Completion Progress Bar -->
   <ProgressBar
     value={chapterCompletion}
     max={100}
@@ -141,6 +133,14 @@
     height="h-2"
     rounded="rounded-sm"
   />
+  <div class="flex justify-between items-center">
+    <h1 class="font-bold text-2xl text-black lg:text-4xl">
+      <span class={chapterNumberColor}>{c.chapter_number}.</span>
+      {c.chapter_name}
+    </h1>
+  </div>
+
+  <!-- Chapter Completion Progress Bar -->
 
   <div
     class={`overflow-hidden transition-all duration-500 ${
@@ -157,7 +157,7 @@
           <div class="mb-2">
             <a
               href={`/topic/${t.topic_id}`}
-              class="bg-black text-white rounded-md py-2 px-3 font-semibold block text-center"
+              class="bg-black text-white rounded-md py-2 px-3 font-semibold block text-center lg:text-2xl"
             >
               {t.topic_name}
             </a>

@@ -673,7 +673,7 @@
       {/key}
 
       <div
-        class={`card w-full h-auto relative !bg-white border-2 rounded-md overflow-hidden group 
+        class={`card w-fit h-auto relative !bg-white border-2 rounded-md overflow-hidden group 
     ${showFront ? "border-primary z-50" : "border-secondary"} ${outcome.completed ? "!border-green-500" : ""} transition-all`}
         style="transform: rotateY({currentRotation}deg);"
       >

@@ -74,7 +74,7 @@
             class=" p-6 card-hover flex flex-row justify-between items-center cursor-pointer bg-white border-2 rounded-md border-gray-300 min-w-fit max-w-full"
             on:click={() => (activeSyllabus = s)}
           >
-            <h1 class="font-bold text-3xl">{s.syllabus_name}</h1>
+            <h1 class="font-bold text-3xl lg:text-4xl">{s.syllabus_name}</h1>
             <div class=" ml-6">
               <h2 class="badge bg-black text-white rounded-md">
                 {s.syllabus_level}
@@ -86,8 +86,9 @@
           </div>
         {/each}
       </div>
-      <button class="btn bg-black text-white mt-4" on:click={() => toggleSearch()}
-        >add another syllabus</button
+      <button
+        class="btn bg-black text-white mt-4"
+        on:click={() => toggleSearch()}>add another syllabus</button
       >
     </div>
   {/if}

@@ -30,9 +30,9 @@
 
 {#if activeSyllabus && chapters?.length !== 0}
   <div
-    class="w-full flex flex-col justify-center items-center gap-4 px-4 min-w-screen-lg px-auto min-h-fit overflow-scroll pb-4 bg-white"
+    class="w-full flex flex-col justify-center items-center gap-6 px-4 lg:min-w-96 px-auto min-h-fit overflow-scroll pb-4 bg-white"
   >
-    <h1 class="text-4xl font-bold text-center text-black">
+    <h1 class="text-7xl font-bold text-center text-black">
       {activeSyllabus.syllabus_name}
     </h1>
     <div class="flex flex-row gap-3 justify-center mb-4">
@@ -47,7 +47,9 @@
       </h2>
     </div>
     <div class="w-full">
-      <div class="grid grid-cols-1 gap-6">
+      <div
+        class="flex lg:flex-wrap flex-col lg:overflow-y-hidden lg:max-h-[70vh] gap-2 gap-x-0"
+      >
         {#each chapters as c}
           <Chapter {c} {data} />
         {/each}

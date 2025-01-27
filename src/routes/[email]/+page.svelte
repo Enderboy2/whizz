@@ -4,6 +4,7 @@
   import { getPokemon, getPokemonList, WORD_LIST } from "$lib/pokemonAPI";
   import Main from "./Main.svelte";
   import New from "./New.svelte";
+
   export let data;
   let { supabase, session } = data;
   $: ({ supabase, session } = data);
@@ -12,6 +13,7 @@
   let pokemonList: any = [];
   let pokemonData: any;
   let isModalOpen = false;
+  let isLoading = true; // Tracks loading state
   let pokemonSearchInput = "";
   let shuffledArray = WORD_LIST.sort(() => 0.5 - Math.random());
   let randomWords = shuffledArray.slice(0, 2);
@@ -23,71 +25,102 @@
     outcome_ids: [],
   };
 
+  // Fetches and saves the profile to the database
   async function saveProfile(profile: any) {
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("email", email);
-
-    if (profileData?.length == 0) {
-      profile.username = randomWords.join(" ");
-      const { data, error } = await supabase.from("profiles").insert({
-        ...profile,
-        id: session?.user?.id,
-        email: session?.user?.email,
-      });
-      if (error) {
-        console.error("Insert error:", error.message);
-      }
-    } else {
-      const { data, error } = await supabase
+    try {
+      const { data: profileData } = await supabase
         .from("profiles")
-        .update(profile)
-        .eq("id", session?.user?.id);
-      if (error) {
-        console.error("Update error:", error.message);
+        .select("*")
+        .eq("email", email);
+
+      if (!profileData?.length) {
+        profile.username = randomWords.join(" ");
+        const { error } = await supabase.from("profiles").insert({
+          ...profile,
+          id: session?.user?.id,
+          email: session?.user?.email,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("profiles")
+          .update(profile)
+          .eq("id", session?.user?.id);
+        if (error) throw error;
       }
+      console.log("Profile saved successfully.");
+    } catch (error) {
+      console.error("Error saving profile:", error.message);
     }
-    console.log("saved " + profile + "to " + session?.user?.id);
   }
 
+  // Refreshes Pokémon data
   async function refreshPokemonData() {
-    pokemonData = await getPokemon(profile.pokemon_id);
-  }
-
-  page.subscribe(async () => {
-    pokemonList = await getPokemonList();
-
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("username,pokemon_id,syllabus_ids,outcome_ids")
-      .eq("email", email);
-
-    if (profileData?.length == 0 && email == session?.user.email) {
-      // saveProfile
-      await saveProfile(profile);
-      console.log("SAVE PROFILE");
-    } else if (profileData != null && profileData.length > 0) {
-      profile = profileData[0];
-    } else {
-      console.log("NO PROFILE!");
+    try {
+      pokemonData = await getPokemon(profile.pokemon_id);
+    } catch (error) {
+      console.error("Error fetching Pokémon data:", error.message);
     }
-    await refreshPokemonData();
-  });
-
-  async function savePageEdits() {
-    await saveProfile(profile);
-    await refreshPokemonData;
-    console.log("SAVING");
-    isModalOpen = false;
   }
+
+  // Initializes the page data
+  async function initialize() {
+    try {
+      isLoading = true;
+
+      pokemonList = await getPokemonList();
+
+      const { data: profileData, error } = await supabase
+        .from("profiles")
+        .select("username, pokemon_id, syllabus_ids, outcome_ids")
+        .eq("email", email);
+
+      if (error) throw error;
+
+      if (!profileData?.length && email === session?.user.email) {
+        await saveProfile(profile);
+      } else if (profileData && profileData.length > 0) {
+        profile = profileData[0];
+      } else {
+        console.warn("No profile found!");
+      }
+
+      await refreshPokemonData();
+    } catch (error) {
+      console.error("Error initializing page:", error.message);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Saves profile edits
+  async function savePageEdits() {
+    try {
+      isLoading = true;
+      await saveProfile(profile);
+      await refreshPokemonData();
+      console.log("Edits saved.");
+      isModalOpen = false;
+    } catch (error) {
+      console.error("Error saving page edits:", error.message);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Run initialize function when the page loads or changes
+  $: initialize();
+
+  page.subscribe(() => initialize());
 </script>
 
-{#if profile.syllabus_ids}
+{#if isLoading}
+  <h1>Loading...</h1>
+{:else}
   <div class="h-screen max-w-screen pt-20">
-    <div class="">
-      {#if session?.user?.email == email}
-        {#if profile.syllabus_ids.length == 0}
+    <div>
+      {#if session?.user?.email === email}
+        {#if profile.syllabus_ids.length === 0}
           <New {profile} {saveProfile} {data} />
         {:else}
           <Main {profile} {saveProfile} {data} />
@@ -97,6 +130,4 @@
       {/if}
     </div>
   </div>
-{:else}
-  <h1>loading...</h1>
 {/if}
