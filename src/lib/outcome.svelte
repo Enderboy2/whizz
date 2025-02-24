@@ -1,4 +1,10 @@
 <script lang="ts">
+  import { library } from '@fortawesome/fontawesome-svg-core';
+  import { faBolt, faBook, faCheck, faSyncAlt, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+  import { fade } from 'svelte/transition';
+
+  library.add(faCheck, faBook, faSyncAlt, faTimes,faBolt,faWandMagicSparkles);
   interface Outcome {
     id: number;
     outcome_name: string;
@@ -435,7 +441,7 @@
       const mainTitle = outcome_name.slice(0, colonIndex + 1).trim();
       const bulletPoints = outcome_name
         .slice(colonIndex + 1)
-        .split("\n")
+        .split("•")
         .map((item) => item.trim())
         .filter((item) => item.length > 0);
 
@@ -443,7 +449,7 @@
         .split(" ")
         .map((word) => {
           return actionWords.includes(word.toLowerCase())
-            ? `<span class="text-blue-600 font-bold text-xl">${word}</span>`
+            ? `<span class="text-blue-600 font-bold">${word}</span>`
             : word;
         })
         .join(" ");
@@ -457,7 +463,7 @@
         .split(" ")
         .map((word) => {
           return actionWords.includes(word.toLowerCase())
-            ? `<span class="text-blue-600  font-bold text-xl">${word}</span>`
+            ? `<span class="text-blue-600 font-bold">${word}</span>`
             : word;
         })
         .join(" ");
@@ -511,6 +517,23 @@
     }
 
     lastTap = currentTime;
+  }
+
+
+  async function openFlashcards() {
+    showFullScreen = !showFullScreen
+    if (outcome.has_flashcards) {
+        flashcards = await fetchFlashcards(outcome.id.toString());
+      } else {
+        flashcards = await generateFlashcards(
+          outcome.outcome_name,
+          outcome.notes_examples
+        );
+        await insertFlashcards(outcome.id.toString(), flashcards);
+        await console.log(setHasFlashcards(outcome.id.toString(), true));
+        flashcards = await fetchFlashcards(outcome.id.toString());
+        outcome.has_flashcards = true;
+      }
   }
 
   // function handleBackdropClick(event: { target: any; currentTarget: any }) {
@@ -658,7 +681,7 @@
       <!-- Prevent scrolling and interaction with background content -->
     {/if}
     <div
-      class={`card-container w-74 mx-4 p-1 long-press-target ${showFullScreen ? "blur-md" : "blur-0"}`}
+      class={`card-container w-74 lg:w-[50%] mx-4 p-1 long-press-target ${showFullScreen ? "blur-md" : "blur-0"} ${showFront ? "hover:scale-105": ""}`}
       on:touchstart={handleTouchStart}
       on:touchend={handleTouchEnd}
       use:longPress={{ duration: 1500, callback: handleLongPress }}
@@ -673,7 +696,7 @@
       {/key}
 
       <div
-        class={`card w-fit h-auto relative !bg-white border-2 rounded-md overflow-hidden group 
+        class={`card w-fit h-auto relative !bg-white border-2 lg:border-4  rounded-md overflow-hidden group 
     ${showFront ? "border-primary z-50" : "border-secondary"} ${outcome.completed ? "!border-green-500" : ""} transition-all`}
         style="transform: rotateY({currentRotation}deg);"
       >
@@ -681,23 +704,23 @@
           <div class="card-side card-front p-4">
             <!-- svelte-ignore a11y-label-has-associated-control -->
             <label
-              class="text-lg font-semibold text-black h-full z-1 text-left"
+              class="lg:text-4xl font-semibold text-black h-full z-1 text-left"
             >
               {#if hasBulletPoints(outcome.outcome_name)}
                 {@html formatOutcomeName(outcome.outcome_name).mainTitle}
-                <ul class="list-disc ml-4 text-gray-800">
+                <ul class="list-disc ml-10 text-gray-600 lg:text-2xl text-wrap">
                   {#each formatOutcomeName(outcome.outcome_name).bulletPoints as point}
-                    <p>{@html point}</p>
+                    <li>{@html point}</li>
                   {/each}
                 </ul>
               {:else}
-                <span class="font-semibold">
+                <span class="font-semibold lg:text-4xl">
                   {@html formatOutcomeName(outcome.outcome_name).mainTitle}
                 </span>
               {/if}
             </label>
             <div
-              class={`text-green-500 text-left w-full text-sm ${outcome.completed ? "" : "scale-0"} transition-all `}
+              class={`text-green-500 text-left w-full text-sm lg:text-2xl ${outcome.completed ? "" : "scale-0"} transition-all `}
             >
               Learned ✅
             </div>
@@ -781,32 +804,61 @@
             {/if}
           </div>
         {/if}
-        <div class="">
+        <div class={`${showFront ? "!scale-100": "!scale-0"} absolute min-w-fit bottom-1 right-1 flex gap-1`}>
           <button
-            class={`btn absolute bg-primary border-none text-white hover:bg-secondary bottom-1 right-1 opacity-50 md:group-hover:!scale-100 transition-transform duration-200 ease-in-out ${showFront ? "scale-0" : "!scale-0"} `}
+            class={`button flip-button btn bg-primary border-none text-white hover:bg-secondary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 group-hover:!scale-100" : "!scale-0"}`}
             on:click={() => {
               flipDirection *= -1;
               currentRotation += 180 * flipDirection;
 
               setTimeout(async () => {
-                showFront = currentRotation % 360 === 0;
-                flipping = false;
-                if (!showFront && txt == "") {
-                  await explain(outcome.outcome_name, outcome.notes_examples);
-                }
+          showFront = currentRotation % 360 === 0;
+          flipping = false;
+          if (!showFront && txt == "") {
+            await explain(outcome.outcome_name, outcome.notes_examples);
+          }
               }, 150);
               flipping = true;
-            }}>Flip</button
-          >
+            }}>
+            <FontAwesomeIcon icon="wand-magic-sparkles" class="h-[80%] mx-2" />
+            <span
+              class="text"
+              transition:fade
+            >
+              Explain
+            </span>
+          </button>
           <button
-            class={`btn absolute bg-primary border-none text-white hover:bg-green-500 bottom-1 right-20 opacity-75 !scale-0 md:group-hover:!scale-100 transition-transform duration-200 ease-in-out ${showFront ? "" : "!scale-0"} `}
+            class={`button flip-button btn bg-primary border-none text-white hover:bg-secondary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 group-hover:!scale-100" : "!scale-0"}`}
             on:click={() => {
-              handleLongPress();
-            }}>Mark as learned</button
-          >
+              openFlashcards();
+            }}>
+            <FontAwesomeIcon icon="bolt" class="h-[80%] mx-2" />
+            <span
+              class="text"
+              transition:fade
+            >
+              Flashcards
+            </span>
+          </button>
+          <button
+            class={`button flip-button btn bg-green-500 border-none text-white hover:bg-primary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 group-hover:!scale-100" : "!scale-0"}`}
+            on:click={() => {
+           handleLongPress();
+            }}>
+            <FontAwesomeIcon icon="check" class="h-[80%] mx-2" />
+            <span
+              class="text"
+              transition:fade
+            >
+              Done
+            </span>
+          </button>
+        
         </div>
+
         <div
-          class=" absolute bottom-0 top-0 w-full flex justify-center items-center transform p-4 rounded-lg text-9xl text-primary font-bold opacity-45 -z-10"
+          class=" absolute bottom-0 top-0 w-full flex justify-center items-center transform p-4 rounded-lg text-9xl  text-primary font-bold opacity-30 -z-10"
         >
           <h1>{outcome.outcome_number}</h1>
         </div>
@@ -857,5 +909,23 @@
     left: 0;
     height: 100%;
     transition: width 0.1s linear;
+  }
+  .button .text {
+    width: 0;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.2s ease;
+  }
+  .button {
+    transition: width 0.2s ease;
+  }
+  .button:hover{
+    width: auto;
+  }
+
+  .button:hover .text {
+    width: auto;
+    opacity: 1;
+    transform: scale(1);
   }
 </style>

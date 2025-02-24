@@ -160,7 +160,7 @@
   <div class=""></div>
 {:else}
   <div
-    class="flex flex-col lg:flex-wrap lg:max-h-[70vh] lg:overflow-hidden mt-16 sm:min-h-screen !text-black !bg-white mx-4 gap-4"
+    class="flex flex-col mt-16 sm:min-h-screen !text-black !bg-white mx-4 gap-4  justify-center items-center"
   >
     <h1 class="text-3xl font-bold text-center mt-2">{topic_name}</h1>
     {#key outcomes}

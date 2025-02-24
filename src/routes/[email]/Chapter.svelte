@@ -122,18 +122,11 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="cursor-pointer border border-gray-300 bg-white rounded-md p-4 lg:p-6 shadow-sm max-w-full mx-1 lg:w-[33%] lg:mx-auto"
+  class="cursor-pointer border border-gray-300 bg-white rounded-md p-4 !pl-0 !pb-0 lg:p-6 shadow-sm max-w-full mx-1 lg:w-[33%] lg:mx-auto"
   on:click={toggleOpen}
 >
-  <ProgressBar
-    value={chapterCompletion}
-    max={100}
-    meter="bg-primary"
-    track="bg-white"
-    height="h-2"
-    rounded="rounded-sm"
-  />
-  <div class="flex justify-between items-center">
+
+  <div class="flex justify-between items-center ml-4">
     <h1 class="font-bold text-2xl text-black lg:text-4xl">
       <span class={chapterNumberColor}>{c.chapter_number}.</span>
       {c.chapter_name}
@@ -143,7 +136,7 @@
   <!-- Chapter Completion Progress Bar -->
 
   <div
-    class={`overflow-hidden transition-all duration-500 ${
+    class={`overflow-hidden transition-all duration-500 ml-4 ${
       isOpen ? "max-h-[1000px]" : "max-h-0"
     }`}
   >
@@ -181,4 +174,13 @@
       {/if}
     </div>
   </div>
+  <ProgressBar
+  class="mt-4"
+  value={chapterCompletion}
+  max={100}
+  meter="bg-primary"
+  track="bg-white"
+  height="h-2"
+  rounded="rounded-sm"
+/>
 </div>

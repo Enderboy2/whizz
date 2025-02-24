@@ -176,67 +176,90 @@
   }
 </script>
 
-<div class="mt-20 h-full w-full ml-1">
+<div class="mt-20 h-full w-full ml-1 justify-center  flex">
+  <div class="lg:w-[50%] h-fit  p-6 rounded justify-center flex flex-col">
+
+
+ 
   {#key syllabusIds}
     {#if syllabusIds && syllabusidstonames}
-      <h1 class="font-bold text-xl w-full text-center mb-6">
+      <h1 class="font-bold text-xl lg:text-5xl w-full text-center mb-6">
         Select topics to show flashcards for👇
       </h1>
-      {#each syllabusIds as syllabusId}
-        <div class="border-b pb-4">
-          <button
-            class="btn text-xl font-bold text-primary bg-white border-2 border-gray-200 transition-colors duration-300"
-            class:text-secondary={selectedSyllabusId === syllabusId}
-            on:click={() =>
-              (selectedSyllabusId =
-                selectedSyllabusId === syllabusId ? null : syllabusId)}
-          >
-            {syllabusidstonames[syllabusId]}
-          </button>
+      {#if loading}
+      <div class="text-center">Loading...</div>
+    {:else}
+      {#if error}
+        <div class="text-center text-red-500">{error}</div>
+      {/if}
+    {/if}
+    <div class="w-full flex justify-center flex-col">
+    {#each syllabusIds as syllabusId}
+      <div class="border-b pb-4 flex flex-wrap">
+        <button
+          class="btn text-xl lg:text-6xl lg:p-6 border-4 rounded-md border-primary font-bold text-primary h-fit bg-white  border-gray-200 transition-colors duration-300 hover:bg-primary hover:text-white hover:border-primary"
+          class:text-secondary={selectedSyllabusId === syllabusId}
+          class:border-secondary={selectedSyllabusId === syllabusId}
+          class:hover:bg-secondary={selectedSyllabusId === syllabusId}
+          class:hover:border-secondary={selectedSyllabusId === syllabusId}
+          on:click={() =>
+            (selectedSyllabusId =
+              selectedSyllabusId === syllabusId ? null : syllabusId)}
+        >
+          {syllabusidstonames[syllabusId]}
+        </button>
 
-          {#if selectedSyllabusId === syllabusId}
-            <div class="ml-4 mt-2">
-              {#each Object.keys(groupedFlashcards[syllabusId]) as chapterId}
-                <div class="mb-4">
-                  <button
-                    class="btn text-lg font-bold text-primary bg-white border-2 border-gray-200
-                    transition-colors duration-300"
-                    class:text-secondary={selectedChapterId === chapterId}
-                    on:click={() =>
-                      (selectedChapterId =
-                        selectedChapterId === chapterId ? null : chapterId)}
-                  >
-                    {chapteridstonames[chapterId]}
-                  </button>
+        {#if selectedSyllabusId === syllabusId}
+          <div class="ml-4 mt-2 flex flex-row flex-wrap gap-2">
+            {#each Object.keys(groupedFlashcards[syllabusId]) as chapterId}
+              <div class="mb-0 ">
+                <button
+                  class="btn text-lg lg:text-3xl h-fit border-primary font-bold text-primary h-fit bg-white border-4 border-gray-200 transition-colors duration-300 hover:bg-primary hover:text-white hover:border-primary
+                  transition-colors duration-300"
+                  class:text-secondary={selectedChapterId === chapterId}
+                  class:border-secondary={selectedChapterId === chapterId}
+                  class:hover:bg-secondary={selectedChapterId === chapterId}
+                  class:hover:border-secondary={selectedChapterId === chapterId}
+                  on:click={() =>
+                    (selectedChapterId =
+                      selectedChapterId === chapterId ? null : chapterId)}
+                >
+                  {chapteridstonames[chapterId]}
+                </button>
 
-                  {#if selectedChapterId === chapterId}
-                    <div class="ml-4 mt-2">
-                      {#each Object.keys(groupedFlashcards[syllabusId][chapterId]) as topicId}
-                        <div class="mb-2">
-                          <button
-                            class="hover:text-secondary p-1 text-sm font-bold text-wrap text-primary bg-white border-2 h-fit border-gray-200 transition-colors
-                            duration-300"
-                            class:text-secondary={selectedTopicId === topicId}
-                            on:click={() =>
-                              (selectedTopicId =
-                                selectedTopicId === topicId ? null : topicId)}
-                          >
-                            {topicidstonames[topicId]}
-                          </button>
-                        </div>
-                      {/each}
-                    </div>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          {/if}
-        </div>
-      {/each}
+                {#if selectedChapterId === chapterId}
+                  <div class="ml-4 mt-2 flex flex-row flex-wrap gap-2">
+                    {#each Object.keys(groupedFlashcards[syllabusId][chapterId]) as topicId}
+                      <div class="mb-2">
+                        <button
+                          class="hover:text-secondary p-1 text-sm lg:text-lg font-bold text-wrap text-primary bg-white border-2 h-fit border-primary hover:bg-primary hover:text-white hover:border-primarys transition-colors rounded-md
+                          duration-300"
+                          class:text-secondary={selectedTopicId === topicId}
+                          class:border-secondary={selectedTopicId === topicId}
+                          class:hover:bg-secondary={selectedTopicId === topicId}
+                          class:hover:border-secondary={selectedTopicId === topicId}
+                          on:click={() =>
+                            (selectedTopicId =
+                              selectedTopicId === topicId ? null : topicId)}
+                        >
+                          {topicidstonames[topicId]}
+                        </button>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/each}
+    </div>
+    
 
       <!-- Button to show flashcards in the popup -->
       <button
-        class="mt-4 p-2 bg-blue-500 text-white rounded"
+        class="mt-4 p-2 bg-black font-bold lg:text-3xl text-white rounded-md"
         on:click={handleTopicSelection}
         disabled={!selectedSyllabusId || !selectedChapterId || !selectedTopicId}
       >
@@ -255,4 +278,5 @@
       <div class="text-center text-gray-500">No flashcards available.</div>
     {/if}
   {/key}
+</div>
 </div>

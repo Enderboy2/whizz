@@ -53,7 +53,7 @@
 <div
   class="absolute inset-0 z-50 bg-white flex flex-col justify-center items-center h-full w-screen overflow-hidden top-0 animate-fade-in"
 >
-  <div class="w-full max-w-md h-full mt-6">
+  <div class="w-full max-w-md lg:max-w-none h-full mt-6">
     {#if flashcards.length > 0}
       <div class="mb-4 flex items-center absolute top-5 w-full">
         <div class="flex flex-col w-full">
@@ -72,7 +72,7 @@
         onDelete={() => deleteFlashcard(flashcards[currentCardIndex].id)}
       />
       <div class="absolute left-0 top-1">
-        <button class="btn btn-ghost bg-opacity-50" on:click={() => onClose()}
+        <button class="btn btn-ghost bg-opacity-50 lg:text-2xl" on:click={() => onClose()}
           >❌</button
         >
       </div>
@@ -87,21 +87,21 @@
             revealAnswer(currentCardIndex)}
         >
           <div class="flex flex-col">
-            <p class="text-gray-600 mb-1">
+            <p class="text-gray-600 mb-1 lg:text-xl px-2">
               {flashcards[currentCardIndex].syllabus_name}
             </p>
             <p
-              class="badge border-gray-200 bg-white border-2 text-primary font-semibold text-lg px-1 px-1 mb-2 text-wrap h-fit py-1"
+              class="badge border-gray-200 bg-white border-2 text-primary font-semibold text-lg lg:text-2xl px-1 px-1 mb-2 text-wrap h-fit py-1"
             >
               {flashcards[currentCardIndex].topic_name}
             </p>
           </div>
-          <p class="font-bold text-2xl">
+          <p class="font-bold text-2xl lg:text-4xl px-2">
             {flashcards[currentCardIndex].question}
           </p>
           <br />
           {#if flashcards[currentCardIndex].clicked}
-            <p class="text-gray-500 font-semibold text-xl px-2" in:fade>
+            <p class="text-gray-500 font-semibold text-xl lg:text-3xl px-2 text-wrap" in:fade>
               {flashcards[currentCardIndex].answer}
             </p>
 
@@ -110,13 +110,13 @@
             >
               {#each [["❌", "forgot"], ["😬", "hard"], ["😆", "good"], ["👑", "easy"]] as option}
                 <button
-                  class="bg-white border-gray-200 border-2 p-4 px-7 rounded-md hover:bg-secondary/90"
+                  class="bg-white lg:w-[20%] sm:w-[10%] lg:p-6 border-primary border-4 p-4 px-5  rounded-md hover:bg-primary/90 hover:text-white transition-all duration-300"
                   on:click={() => {
                     selectOption(option);
                   }}
                 >
-                  <p>{option[0]}</p>
-                  <p class=" text-xs">{option[1]}</p>
+                  <p class="lg:text-4xl text-lg">{option[0]}</p>
+                  <p class=" text-xs lg:text-xl lg:font-semibold">{option[1]}</p>
                 </button>
               {/each}
             </div>
