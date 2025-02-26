@@ -804,9 +804,10 @@
             {/if}
           </div>
         {/if}
-        <div class={`${showFront ? "!scale-100": "!scale-0"} absolute min-w-fit bottom-1 right-1 flex gap-1`}>
+        <div class={`${showFront ? "!scale-100": "!scale-0"} absolute min-w-fit bottom-1 right-1 flex gap-1 
+        `}>
           <button
-            class={`button flip-button btn bg-primary border-none text-white hover:bg-secondary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 group-hover:!scale-100" : "!scale-0"}`}
+            class={`button flip-button btn bg-primary border-none text-white hover:bg-secondary opacity-75 lg:group-hover:!scale-100 sm:!scale-0 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 lg:group-hover:!scale-100" : "!scale-0"}`}
             on:click={() => {
               flipDirection *= -1;
               currentRotation += 180 * flipDirection;
@@ -829,7 +830,7 @@
             </span>
           </button>
           <button
-            class={`button flip-button btn bg-primary border-none text-white hover:bg-secondary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 group-hover:!scale-100" : "!scale-0"}`}
+            class={`button flip-button btn bg-primary border-none text-white hover:bg-secondary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 lg:group-hover:!scale-100" : "!scale-0"}`}
             on:click={() => {
               openFlashcards();
             }}>
@@ -842,7 +843,7 @@
             </span>
           </button>
           <button
-            class={`button flip-button btn bg-green-500 border-none text-white hover:bg-primary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 group-hover:!scale-100" : "!scale-0"}`}
+            class={`button flip-button btn bg-green-500 border-none text-white hover:bg-primary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 lg:group-hover:!scale-100" : "!scale-0"}`}
             on:click={() => {
            handleLongPress();
             }}>
