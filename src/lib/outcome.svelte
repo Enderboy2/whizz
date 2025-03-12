@@ -1,10 +1,17 @@
 <script lang="ts">
-  import { library } from '@fortawesome/fontawesome-svg-core';
-  import { faBolt, faBook, faCheck, faSyncAlt, faTimes, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
-  import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-  import { fade } from 'svelte/transition';
+  import { library } from "@fortawesome/fontawesome-svg-core";
+  import {
+    faBolt,
+    faBook,
+    faCheck,
+    faSyncAlt,
+    faTimes,
+    faWandMagicSparkles,
+  } from "@fortawesome/free-solid-svg-icons";
+  import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
+  import { fade } from "svelte/transition";
 
-  library.add(faCheck, faBook, faSyncAlt, faTimes,faBolt,faWandMagicSparkles);
+  library.add(faCheck, faBook, faSyncAlt, faTimes, faBolt, faWandMagicSparkles);
   interface Outcome {
     id: number;
     outcome_name: string;
@@ -33,6 +40,9 @@
   let flipping = false;
   let isLoading = true;
   let flashcards: any;
+  if (outcome.explanation != "") {
+    outcome.explanation = JSON.parse(outcome.explanation);
+  }
 
   function handleTouchStart(event: TouchEvent) {
     startX = event.touches[0].clientX;
@@ -42,14 +52,18 @@
     const endX = event.changedTouches[0].clientX;
     const swipeDistance = endX - startX;
 
-    if (Math.abs(swipeDistance) > 100) {
+    if (Math.abs(swipeDistance) > 200) {
       flipDirection = swipeDistance > 0 ? 1 : -1;
       currentRotation += 180 * flipDirection;
 
       setTimeout(async () => {
         showFront = currentRotation % 360 === 0;
         if (!showFront && txt == "") {
-          await explain(outcome.outcome_name, outcome.notes_examples);
+          await explain(
+            outcome.outcome_name,
+            outcome.notes_examples,
+            outcome.explanation
+          );
           // flashcards = await generateFlashcards(
           //   outcome.outcome_name,
           //   outcome.notes_examples
@@ -88,7 +102,10 @@
     );
   };
 
-  const explain = async (outcomeName: string, notesExamples: string) => {
+  const generateExplanation = async (
+    outcomeName: string,
+    notesExamples: string
+  ) => {
     try {
       console.log("Started generating...");
 
@@ -186,6 +203,30 @@
         explanation:
           "Sorry, an error occurred while generating the explanation, try again.",
       };
+    }
+  };
+  const explain = async (
+    outcomeName: string,
+    notesExamples: string,
+    explanation: string
+  ) => {
+    // First generate the explanation
+    if (explanation == "") {
+      await generateExplanation(outcomeName, notesExamples);
+
+      // After explanation is generated, update the database
+      try {
+        const { error } = await supabase
+          .from("outcomes")
+          .update({ explanation: txt })
+          .eq("id", outcome.id);
+
+        if (error) {
+          console.error("Error updating explanation in database:", error);
+        }
+      } catch (error) {
+        console.error("Unexpected error updating explanation:", error);
+      }
     }
   };
 
@@ -519,21 +560,20 @@
     lastTap = currentTime;
   }
 
-
   async function openFlashcards() {
-    showFullScreen = !showFullScreen
+    showFullScreen = !showFullScreen;
     if (outcome.has_flashcards) {
-        flashcards = await fetchFlashcards(outcome.id.toString());
-      } else {
-        flashcards = await generateFlashcards(
-          outcome.outcome_name,
-          outcome.notes_examples
-        );
-        await insertFlashcards(outcome.id.toString(), flashcards);
-        await console.log(setHasFlashcards(outcome.id.toString(), true));
-        flashcards = await fetchFlashcards(outcome.id.toString());
-        outcome.has_flashcards = true;
-      }
+      flashcards = await fetchFlashcards(outcome.id.toString());
+    } else {
+      flashcards = await generateFlashcards(
+        outcome.outcome_name,
+        outcome.notes_examples
+      );
+      await insertFlashcards(outcome.id.toString(), flashcards);
+      await console.log(setHasFlashcards(outcome.id.toString(), true));
+      flashcards = await fetchFlashcards(outcome.id.toString());
+      outcome.has_flashcards = true;
+    }
   }
 
   // function handleBackdropClick(event: { target: any; currentTarget: any }) {
@@ -681,7 +721,7 @@
       <!-- Prevent scrolling and interaction with background content -->
     {/if}
     <div
-      class={`card-container w-74 lg:w-[50%] mx-4 p-1 long-press-target ${showFullScreen ? "blur-md" : "blur-0"} ${showFront ? "hover:scale-105": ""}`}
+      class={`card-container w-74 lg:w-[50%] mx-4 p-1 long-press-target ${showFullScreen ? "blur-md" : "blur-0"} ${showFront ? "hover:scale-105" : ""}`}
       on:touchstart={handleTouchStart}
       on:touchend={handleTouchEnd}
       use:longPress={{ duration: 1500, callback: handleLongPress }}
@@ -800,12 +840,80 @@
                 {/if}
               {/key}
             {:else}
-              <p>ready explanation for {outcome.explanation}</p>
+              {#key outcome.explanation}
+                <div
+                  class="prose prose-indigo p-2 w-full max-w-none !text-black text-sm lg:text-xl lg:font-medium"
+                  on:load={() => console.log("loaded")}
+                >
+                  <h1 class="text-3xl font-bold mb-1 mt-0 !text-black">
+                    {outcome.explanation?.title}
+                  </h1>
+                  <div
+                    class="flex flex-row text-sm h-6 items-baseline mb-1 !text-black"
+                  >
+                    <h2
+                      class="badge !bg-black max-h-fit p-2 !text-white m-0 text-sm"
+                    >
+                      {outcome.explanation?.difficulty || ""}
+                    </h2>
+                  </div>
+                  {@html marked(outcome.explanation?.explanation, {
+                    renderer,
+                    breaks: true,
+                  })}
+                  <hr class="my-2" />
+                  {#if outcome.explanation?.study_methods}
+                    {#if outcome.explanation?.study_methods?.higher_order && outcome.explanation?.study_methods?.lower_order}
+                      <div class="flex flex-col !text-black">
+                        <h1 class="text-3xl font-bold my-0 mb-2 !text-black">
+                          Study Methods 😉
+                        </h1>
+                        {#if outcome.explanation?.study_methods?.higher_order?.length > 0}
+                          <h2
+                            class="text-2xl font-semibold my-0 ml-2 !text-black"
+                          >
+                            Higher Order
+                          </h2>
+                          <ul class="ml-2">
+                            {#each outcome.explanation?.study_methods?.higher_order as method}
+                              <li class="list-disc">{method}</li>
+                            {/each}
+                          </ul>
+                        {/if}
+                        {#if outcome.explanation?.study_methods?.lower_order?.length > 0}
+                          <h2
+                            class="text-2xl font-semibold my-0 ml-2 !text-black"
+                          >
+                            Lower Order
+                          </h2>
+                          <ul class="ml-2">
+                            {#each outcome.explanation?.study_methods?.lower_order as method}
+                              <li class="list-disc">{method}</li>
+                            {/each}
+                          </ul>
+                        {/if}
+                      </div>
+                    {/if}
+                  {/if}
+                  <button
+                    class="btn absolute bg-secondary border-none text-white hover:bg-primary bottom-1 right-1 opacity-75 scale-0 md:group-hover:scale-100 transition-transform duration-200 ease-in-out"
+                    on:click={() => {
+                      flipDirection *= -1;
+                      currentRotation -= 180 * flipDirection;
+                      setTimeout(async () => {
+                        showFront = currentRotation % 360 === 0;
+                      }, 150);
+                    }}>Flip back</button
+                  >
+                </div>
+              {/key}
             {/if}
           </div>
         {/if}
-        <div class={`${showFront ? "!scale-100": "!scale-0"} absolute min-w-fit bottom-1 right-1 flex gap-1 
-        `}>
+        <div
+          class={`${showFront ? "!scale-100" : "!scale-0"} absolute min-w-fit bottom-1 right-1 flex gap-1 
+        `}
+        >
           <button
             class={`button flip-button btn bg-primary border-none text-white hover:bg-secondary opacity-75 lg:group-hover:!scale-100 sm:!scale-0 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 lg:group-hover:!scale-100" : "!scale-0"}`}
             on:click={() => {
@@ -813,53 +921,44 @@
               currentRotation += 180 * flipDirection;
 
               setTimeout(async () => {
-          showFront = currentRotation % 360 === 0;
-          flipping = false;
-          if (!showFront && txt == "") {
-            await explain(outcome.outcome_name, outcome.notes_examples);
-          }
+                showFront = currentRotation % 360 === 0;
+                flipping = false;
+                if (!showFront && txt == "") {
+                  await explain(
+                    outcome.outcome_name,
+                    outcome.notes_examples,
+                    outcome.explanation
+                  );
+                }
               }, 150);
               flipping = true;
-            }}>
+            }}
+          >
             <FontAwesomeIcon icon="wand-magic-sparkles" class="h-[80%] mx-2" />
-            <span
-              class="text"
-              transition:fade
-            >
-              Explain
-            </span>
+            <span class="text" transition:fade> Explain </span>
           </button>
           <button
             class={`button flip-button btn bg-primary border-none text-white hover:bg-secondary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 lg:group-hover:!scale-100" : "!scale-0"}`}
             on:click={() => {
               openFlashcards();
-            }}>
+            }}
+          >
             <FontAwesomeIcon icon="bolt" class="h-[80%] mx-2" />
-            <span
-              class="text"
-              transition:fade
-            >
-              Flashcards
-            </span>
+            <span class="text" transition:fade> Flashcards </span>
           </button>
           <button
             class={`button flip-button btn bg-green-500 border-none text-white hover:bg-primary opacity-75 md:group-hover:!scale-100 overflow-hidden transition-transform duration-200 !p-2 px-4 items-center ease-in-out w-12 flex flex-row justify-center hover:pr-4 group relative ${showFront ? "scale-0 lg:group-hover:!scale-100" : "!scale-0"}`}
             on:click={() => {
-           handleLongPress();
-            }}>
+              handleLongPress();
+            }}
+          >
             <FontAwesomeIcon icon="check" class="h-[80%] mx-2" />
-            <span
-              class="text"
-              transition:fade
-            >
-              Done
-            </span>
+            <span class="text" transition:fade> Done </span>
           </button>
-        
         </div>
 
         <div
-          class=" absolute bottom-0 top-0 w-full flex justify-center items-center transform p-4 rounded-lg text-9xl  text-primary font-bold opacity-30 -z-10"
+          class=" absolute bottom-0 top-0 w-full flex justify-center items-center transform p-4 rounded-lg text-9xl text-primary font-bold opacity-30 -z-10"
         >
           <h1>{outcome.outcome_number}</h1>
         </div>
@@ -878,6 +977,9 @@
     transition: transform 0.3s ease-in-out;
     position: relative;
     transform-style: preserve-3d;
+    transition:
+      transform 0.3s ease-in-out,
+      height 0.3s ease-in-out;
   }
 
   .card-side {
@@ -920,7 +1022,7 @@
   .button {
     transition: width 0.2s ease;
   }
-  .button:hover{
+  .button:hover {
     width: auto;
   }
 

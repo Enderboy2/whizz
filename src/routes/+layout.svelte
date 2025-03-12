@@ -53,6 +53,10 @@
           on:click={() => goto("/flashcards")}>🃏</button
         >
         <button
+          class="btn bg-white border-none"
+          on:click={() => goto("/past_papers")}>📄</button
+        >
+        <button
           class="ml-2 btn btn-ghost"
           on:click={async () => {
             await supabase.auth.signOut();
@@ -62,5 +66,6 @@
     </div>
   </div>
 </div>
-
-<slot class="bg-white"></slot>
+<div class="min-h-screen h-fit w-screen pt-16 overflow-scroll">
+  <slot class="bg-white"></slot>
+</div>
