@@ -2,6 +2,7 @@
   import { page } from "$app/stores";
   import { fade, slide } from "svelte/transition";
   import { quintOut } from "svelte/easing";
+  import { onDestroy } from "svelte";
   import Paper from "$lib/Paper.svelte";
   // @ts-ignore
   export let data;
@@ -400,6 +401,89 @@
       showVariantModal = false;
     }
   }
+  // Track tilt elements for each year
+  let tiltElements = new Map();
+  let isHovering = false;
+  let rafId = null;
+
+  function handleMouseMove(event, elementId) {
+    const tiltElement = tiltElements.get(elementId);
+    if (!tiltElement || !isHovering) return;
+
+    if (rafId) cancelAnimationFrame(rafId);
+
+    rafId = requestAnimationFrame(() => {
+      const rect = tiltElement.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const maxRotate = 3;
+
+      const rotateX = ((y - centerY) / centerY) * -maxRotate;
+      const rotateY = ((x - centerX) / centerX) * maxRotate;
+
+      tiltElement.style.transform = `
+        perspective(1000px)
+        rotateX(${rotateX}deg)
+        rotateY(${rotateY}deg)
+        scale3d(1.02, 1.02, 1.02)
+      `;
+    });
+  }
+
+  function handleMouseEnter(elementId) {
+    isHovering = true;
+    const tiltElement = tiltElements.get(elementId);
+    if (tiltElement) {
+      tiltElement.style.transition = "transform 0.1s ease-out";
+    }
+  }
+
+  function handleMouseLeave(elementId) {
+    isHovering = false;
+    const tiltElement = tiltElements.get(elementId);
+    if (tiltElement) {
+      tiltElement.style.transition = "transform 0.3s ease-out";
+      tiltElement.style.transform = `
+        perspective(1000px)
+        rotateX(0deg)
+        rotateY(0deg)
+        scale3d(1, 1, 1)
+      `;
+    }
+  }
+
+  onDestroy(() => {
+    if (rafId) cancelAnimationFrame(rafId);
+    tiltElements.clear();
+  });
+
+  // Create a tilt effect action
+  function tiltEffect(node, { s }) {
+    if (node) {
+      tiltElements.set(s, node);
+    }
+
+    const handleMove = (e) => handleMouseMove(e, s);
+    const handleEnter = () => handleMouseEnter(s);
+    const handleLeave = () => handleMouseLeave(s);
+
+    node.addEventListener("mousemove", handleMove);
+    node.addEventListener("mouseenter", handleEnter);
+    node.addEventListener("mouseleave", handleLeave);
+
+    return {
+      destroy() {
+        tiltElements.delete(s);
+        node.removeEventListener("mousemove", handleMove);
+        node.removeEventListener("mouseenter", handleEnter);
+        node.removeEventListener("mouseleave", handleLeave);
+      },
+    };
+  }
 </script>
 
 <!-- svelte-ignore missing-declaration -->
@@ -498,7 +582,10 @@
           <!-- Adjust paper list spacing -->
           <div class="space-y-2 sm:space-y-4">
             {#each Object.entries(selectedSyllabus?.papers || {}) as [paperNumber, paperConfig]}
-              <div class="border rounded-lg overflow-hidden">
+              <div
+                class="border rounded-lg overflow-hidden"
+                use:tiltEffect={{ s: paperNumber }}
+              >
                 <div
                   class="w-full p-2 sm:p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                 >

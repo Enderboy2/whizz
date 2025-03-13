@@ -56,6 +56,90 @@
   $: if (profile?.syllabus_ids) {
     fetchSyllabuses();
   }
+
+  // Track tilt elements for each year
+  let tiltElements = new Map();
+  let isHovering = false;
+  let rafId = null;
+
+  function handleMouseMove(event, elementId) {
+    const tiltElement = tiltElements.get(elementId);
+    if (!tiltElement || !isHovering) return;
+
+    if (rafId) cancelAnimationFrame(rafId);
+
+    rafId = requestAnimationFrame(() => {
+      const rect = tiltElement.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const maxRotate = 3;
+
+      const rotateX = ((y - centerY) / centerY) * -maxRotate;
+      const rotateY = ((x - centerX) / centerX) * maxRotate;
+
+      tiltElement.style.transform = `
+        perspective(1000px)
+        rotateX(${rotateX}deg)
+        rotateY(${rotateY}deg)
+        scale3d(1.02, 1.02, 1.02)
+      `;
+    });
+  }
+
+  function handleMouseEnter(elementId) {
+    isHovering = true;
+    const tiltElement = tiltElements.get(elementId);
+    if (tiltElement) {
+      tiltElement.style.transition = "transform 0.1s ease-out";
+    }
+  }
+
+  function handleMouseLeave(elementId) {
+    isHovering = false;
+    const tiltElement = tiltElements.get(elementId);
+    if (tiltElement) {
+      tiltElement.style.transition = "transform 0.3s ease-out";
+      tiltElement.style.transform = `
+        perspective(1000px)
+        rotateX(0deg)
+        rotateY(0deg)
+        scale3d(1, 1, 1)
+      `;
+    }
+  }
+
+  onDestroy(() => {
+    if (rafId) cancelAnimationFrame(rafId);
+    tiltElements.clear();
+  });
+
+  // Create a tilt effect action
+  function tiltEffect(node, { s }) {
+    if (node) {
+      tiltElements.set(s, node);
+    }
+
+    const handleMove = (e) => handleMouseMove(e, s);
+    const handleEnter = () => handleMouseEnter(s);
+    const handleLeave = () => handleMouseLeave(s);
+
+    node.addEventListener("mousemove", handleMove);
+    node.addEventListener("mouseenter", handleEnter);
+    node.addEventListener("mouseleave", handleLeave);
+
+    return {
+      destroy() {
+        tiltElements.delete(s);
+        node.removeEventListener("mousemove", handleMove);
+        node.removeEventListener("mouseenter", handleEnter);
+        node.removeEventListener("mouseleave", handleLeave);
+      },
+    };
+  }
 </script>
 
 {#if syllabuses.length > 0}
@@ -81,8 +165,12 @@
       <h1 class="mb-6 font-bold text-xl">What do you want to study?</h1>
       <div class=" flex flex-col gap-4">
         {#each syllabuses as s, index}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
-            class="card p-2 mb-1 pb-6 rounded-md !bg-white !text-black border-2 border-gray-300 relative"
+            class="card p-2 mb-1 pb-6 rounded-md !bg-white !text-black border-2 border-gray-300 relative cursor-pointer hover:shadow-lg transition-shadow duration-300"
+            on:click={() => (activeSyllabus = s)}
+            use:tiltEffect={{ s }}
           >
             <header class="card-header flex justify-between items-center">
               <div class="flex justify-between items-center gap-6">
@@ -99,7 +187,10 @@
                   >
                   <button
                     class="btn btn-dots"
-                    on:click={() => toggleMenu(index)}>⋮</button
+                    on:click={(event) => {
+                      event.stopPropagation();
+                      toggleMenu(index);
+                    }}>⋮</button
                   >
                   {#if menuOpenIndex === index}
                     <div class="menu translate-x-16">
