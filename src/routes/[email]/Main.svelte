@@ -14,6 +14,7 @@
   let syllabuses: any[] = [];
   let activeSyllabus: any = null;
   let isSearch = false;
+  let menuOpenIndex: number | null = null;
 
   const fetchSyllabuses = async () => {
     if (profile.syllabus_ids && profile.syllabus_ids.length > 0) {
@@ -38,6 +39,18 @@
 
   const toggleSearch = () => {
     isSearch = !isSearch;
+  };
+
+  const toggleMenu = (index: number) => {
+    menuOpenIndex = menuOpenIndex === index ? null : index;
+  };
+
+  const deleteSyllabus = (syllabusId: number) => {
+    profile.syllabus_ids = profile.syllabus_ids.filter(
+      (id) => id !== syllabusId
+    );
+    saveProfile(profile);
+    menuOpenIndex = null;
   };
 
   $: if (profile?.syllabus_ids) {
@@ -67,22 +80,41 @@
     >
       <h1 class="mb-6 font-bold text-xl">What do you want to study?</h1>
       <div class=" flex flex-col gap-4">
-        {#each syllabuses as s}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
+        {#each syllabuses as s, index}
           <div
-            class=" p-6 card-hover flex flex-row justify-between items-center cursor-pointer bg-white border-2 rounded-md border-gray-300 min-w-fit max-w-full"
-            on:click={() => (activeSyllabus = s)}
+            class="card p-2 mb-1 pb-6 rounded-md !bg-white !text-black border-2 border-gray-300 relative"
           >
-            <h1 class="font-bold text-3xl lg:text-4xl">{s.syllabus_name}</h1>
-            <div class=" ml-6">
-              <h2 class="badge bg-black text-white rounded-md">
-                {s.syllabus_level}
-              </h2>
-              <h2 class="badge bg-black text-white rounded-md ml-2">
-                {s.syllabus_code}
-              </h2>
-            </div>
+            <header class="card-header flex justify-between items-center">
+              <div class="flex justify-between items-center gap-6">
+                <h1 class="text-3xl font-bold max-w-40">{s.syllabus_name}</h1>
+                <div class="flex gap-2 items-center mt-2">
+                  <span class="badge bg-black text-white rounded-md"
+                    >{s.syllabus_code}</span
+                  >
+                  <span class="badge bg-black text-white rounded-md"
+                    >{s.syllabus_level}</span
+                  >
+                  <span class="badge bg-black text-white rounded-md"
+                    >{s.syllabus_board}</span
+                  >
+                  <button
+                    class="btn btn-dots"
+                    on:click={() => toggleMenu(index)}>⋮</button
+                  >
+                  {#if menuOpenIndex === index}
+                    <div class="menu translate-x-16">
+                      <button
+                        class="btn btn-danger"
+                        on:click={() => deleteSyllabus(s.syllabus_id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  {/if}
+                </div>
+              </div>
+              <div></div>
+            </header>
           </div>
         {/each}
       </div>
@@ -93,3 +125,43 @@
     </div>
   {/if}
 {/if}
+
+<style>
+  .btn-dots {
+    background-color: transparent; /* Make the button background transparent */
+    border: none; /* Remove default button border */
+    color: #333; /* Set the color of the dots */
+    font-size: 24px; /* Increase the font size for better visibility */
+    cursor: pointer; /* Change cursor to pointer */
+    transition: color 0.3s; /* Smooth transition for hover effect */
+  }
+
+  .btn-dots:hover {
+    color: #007bff; /* Change color on hover */
+  }
+
+  .menu {
+    position: absolute; /* Position it relative to the parent */
+    background-color: white; /* Set background color */
+    border: 1px solid #ccc; /* Border for the menu */
+    border-radius: 4px; /* Rounded corners */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Shadow for depth */
+    z-index: 1000; /* Ensure it appears above other elements */
+    right: 0; /* Align the menu to the right */
+    margin-top: 5px; /* Space between the button and the menu */
+  }
+
+  .btn-danger {
+    background-color: #dc3545; /* Red background for delete button */
+    color: white; /* White text color */
+    border: none; /* Remove border */
+    padding: 8px 12px; /* Padding for the button */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Change cursor to pointer */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+  }
+
+  .btn-danger:hover {
+    background-color: #c82333; /* Darker red on hover */
+  }
+</style>
